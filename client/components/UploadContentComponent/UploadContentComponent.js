@@ -1,58 +1,70 @@
+// UploadContentComponent.js
 import { useRef, useState } from "react";
 import "./UploadContentComponent.css";
 
-export function UploadContentComponent(props) {
-  const uploadFile = useRef(null);
-  const uploads = useRef(null);
+export function UploadContentComponent() {
+  const uploadFileRef = useRef(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const handleFileSelection = () => {
-    const files = uploadFile.current.files;
-    const fileNames = Array.from(files).map((file) => file.name);
-    setUploadedFiles(fileNames);
+    const files = uploadFileRef.current.files;
+    const fileData = Array.from(files).map((file) => ({
+      name: file.name,
+    }));
+    setUploadedFiles(fileData);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const files = uploadFile.current.files;
+    const files = uploadFileRef.current.files;
     if (files.length === 0) return;
 
-    const formData = new FormData();
-    Array.from(files).forEach((file) => {
-      formData.append("files", file);
-    });
+    for (const file of files) {
+      try {
+        // Request presigned URL from the server
+        const response = await fetch("/api/upload", {
+          method: "POST",
+        });
+        const { url, fields, fileName } = await response.json();
 
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Files uploaded successfully:", result);
-        setUploadedFiles([]); // Clear the uploaded files list
-      } else {
-        console.error("File upload failed");
+        // Prepare form data to send to S3
+        const formData = new FormData();
+        Object.entries(fields).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+        formData.append("file", file);
+
+        // Upload the file directly to S3
+        const s3Response = await fetch(url, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (s3Response.ok) {
+          console.log(`File ${fileName} uploaded successfully`);
+        } else {
+          console.error("Failed to upload file to S3");
+        }
+      } catch (error) {
+        console.error("Error uploading files:", error);
       }
-    } catch (error) {
-      console.error("Error uploading files:", error);
     }
 
-    e.target.reset();
+    setUploadedFiles([]); // Clear the uploaded files list
+    uploadFileRef.current.value = ""; // Reset the file input
   };
 
   return (
     <div className="upload_container">
-      <form id="login-form" onSubmit={handleSubmit}>
+      <form id="upload-form" onSubmit={handleSubmit}>
         <div className="form-title">Upload Project</div>
         <input
           type="file"
           name="directory"
           className="form-element"
-          ref={uploadFile}
+          ref={uploadFileRef}
           required
-          webkitdirectory="true"
           multiple
           onChange={handleFileSelection}
         />
@@ -60,14 +72,13 @@ export function UploadContentComponent(props) {
           Submit
         </button>
       </form>
-      <div id="files-uploaded" ref={uploads}>
-        {uploadedFiles.length > 0
-          ? uploadedFiles.map((fileName, index) => (
-              <div id="uploaded-files" key={index}>
-                {fileName}
-              </div>
-            ))
-          : null}
+      <div id="files-uploaded">
+        {uploadedFiles.length > 0 &&
+          uploadedFiles.map((file, index) => (
+            <div className="uploaded-file" key={index}>
+              {file.name}
+            </div>
+          ))}
       </div>
     </div>
   );
