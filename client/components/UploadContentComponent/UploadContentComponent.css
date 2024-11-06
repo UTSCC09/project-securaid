@@ -1,6 +1,6 @@
 #login-form {
-    max-width: 500px;
     min-width: 350px;
+    max-height: 500px;
     padding: 25px;
     border-radius: 10px;
     display: flex;
@@ -14,12 +14,14 @@
   .form-title {
     font-size: 25px;
     font-weight: bold;
-    text-align: center;
+    text-align: left;
     color: var(--font_colour);
   }
   
   .form-element {
     width: 100%;
+    max-width: 350px;
+    height: max-content;
     padding: 0.8rem;
     font-size: 1rem;
     border: 1px solid #ccc;
@@ -62,6 +64,7 @@ display: inline-flex;
 flex-wrap: wrap;
 gap: 5px;
 height: max-content;
+
 }
 #uploaded-files{
 background-color:  var(--orange);
@@ -71,13 +74,33 @@ border-radius: 5px;
 font: 20px var(--font-Helvetica);
 }
 
-#submit{
+/* #submit{
   background-color: var(--orange);
-}
+  width: 100%;
+  max-width: 350px;
+} */
+
+#input-display{
+  display: flex;
+  gap: 25px;
+  min-width: 400px;
+    }
 
 @media (max-width: 500px) {
     .upload_container{
         display: flex;
         flex-direction: column;
       }
+      #input-display{
+        display: flex;
+        flex-direction: column;
+        }
+        #login-form{
+          max-height: none;
+        }
+        #files-uploaded{
+          max-width: 350px;
+        }
+
   }
+

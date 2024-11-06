@@ -38,7 +38,6 @@ export function UploadContentComponent(props) {
     } catch (error) {
       console.error("Error uploading files:", error);
     }
-
     e.target.reset();
   };
 
@@ -46,29 +45,31 @@ export function UploadContentComponent(props) {
     <div className="upload_container">
       <form id="login-form" onSubmit={handleSubmit}>
         <div className="form-title">Upload Project</div>
-        <input
-          type="file"
-          name="directory"
-          className="form-element"
-          ref={uploadFile}
-          required
-          webkitdirectory="true"
-          multiple
-          onChange={handleFileSelection}
-        />
+        <div id="input-display">
+          <input
+            type="file"
+            name="directory"
+            className="form-element"
+            ref={uploadFile}
+            required
+            webkitdirectory="true"
+            multiple
+            onChange={handleFileSelection}
+          />
+          <div id="files-uploaded" ref={uploads}>
+            {uploadedFiles.length > 0
+              ? uploadedFiles.map((fileName, index) => (
+                  <div id="uploaded-files" key={index}>
+                    {fileName}
+                  </div>
+                ))
+              : null}
+          </div>
+        </div>
         <button type="submit" className="form-element" id="submit">
           Submit
         </button>
       </form>
-      <div id="files-uploaded" ref={uploads}>
-        {uploadedFiles.length > 0
-          ? uploadedFiles.map((fileName, index) => (
-              <div id="uploaded-files" key={index}>
-                {fileName}
-              </div>
-            ))
-          : null}
-      </div>
     </div>
   );
 }
