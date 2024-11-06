@@ -7,11 +7,14 @@ import { NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import mongoose from "mongoose";
 
-// Initialize MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("Connected to MongoDB using Mongoose");
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });
 
 const FileSchema = new mongoose.Schema({
   fileName: String,
