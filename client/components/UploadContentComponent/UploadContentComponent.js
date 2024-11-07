@@ -44,7 +44,7 @@ export function UploadContentComponent(props) {
   return (
     <div className="upload_container">
       <form id="login-form" onSubmit={handleSubmit}>
-        <div className="form-title">Upload Project</div>
+        <div id="form-title_upload">Upload Project</div>
         <div id="input-display">
           <input
             type="file"

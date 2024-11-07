@@ -5,13 +5,12 @@
     border-radius: 10px;
     display: flex;
     flex-direction: column;
-        backdrop-filter: blur(20px);
+        backdrop-filter: blur(30px);
         border-radius: 15px;
     gap: 25px;
     font-family: var(--font-Helvetica);
-    border: 5px solid var(--orange);
   }
-  .form-title {
+  #form-title_upload {
     font-size: 25px;
     font-weight: bold;
     text-align: left;
