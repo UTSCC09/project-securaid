@@ -11,6 +11,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.685.0",
     "@aws-sdk/s3-presigned-post": "^3.685.0",
+    "@aws-sdk/s3-request-presigner": "^3.687.0",
     "aws-sdk": "^2.1691.0",
     "busboy": "^1.6.0",
     "formidable": "^3.5.2",
@@ -20,7 +21,8 @@
     "multer-s3": "^3.0.1",
     "next": "^15.0.2",
     "react": "^19.0.0-rc-02c0e824-20241028",
-    "react-dom": "^19.0.0-rc-02c0e824-20241028"
+    "react-dom": "^19.0.0-rc-02c0e824-20241028",
+    "uuid": "^11.0.2"
   },
   "devDependencies": {
     "@types/node": "^20.17.6",
