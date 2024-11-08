@@ -3,49 +3,64 @@
 import { useState } from "react";
 
 export function UploadContentComponent() {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [folderName, setFolderName] = useState("");
+  const [uploadedLinks, setUploadedLinks] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!file) {
-      alert("Please select a file to upload.");
+    if (!files.length || !folderName.trim()) {
+      alert("Please select files and provide a folder name.");
       return;
     }
 
     setUploading(true);
+    setUploadedLinks([]);
 
     try {
-      // Request to get the pre-signed URL
+      const fileData = Array.from(files).map((file) => ({
+        filename: file.name,
+        contentType: file.type,
+      }));
+
+      // Request to get pre-signed URLs
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+        body: JSON.stringify({ folderName, files: fileData }),
       });
 
       if (response.ok) {
-        const { url } = await response.json();
+        const uploadUrls = await response.json();
 
-        // Upload the file to S3
-        const uploadResponse = await fetch(url, {
-          method: "PUT",
-          headers: {
-            "Content-Type": file.type,
-          },
-          body: file,
-        });
+        // Upload each file to S3
+        await Promise.all(
+          uploadUrls.map(({ url }, index) =>
+            fetch(url, {
+              method: "PUT",
+              headers: {
+                "Content-Type": files[index].type,
+              },
+              body: files[index],
+            })
+          )
+        );
 
-        if (uploadResponse.ok) {
-          alert("Upload successful!");
-        } else {
-          console.error("S3 Upload Error:", uploadResponse);
-          alert("Upload failed.");
-        }
+        // Create individual file links and set the state
+        const bucketName = "securaid";
+        const region = "ca-central-1";
+        const fileLinks = uploadUrls.map(({ key }) => ({
+          filename: key.split("/").pop(), // Display the filename
+          url: `https://${bucketName}.s3.${region}.amazonaws.com/${key}`,
+        }));
+
+        setUploadedLinks(fileLinks);
       } else {
-        alert("Failed to get pre-signed URL.");
+        alert("Failed to get pre-signed URLs.");
       }
     } catch (error) {
       console.error("Error during upload:", error);
@@ -57,23 +72,39 @@ export function UploadContentComponent() {
 
   return (
     <main>
-      <h1>Upload a File to S3</h1>
+      <h1>Upload Files to S3</h1>
       <form onSubmit={handleSubmit}>
         <input
-          id="file"
+          type="text"
+          placeholder="Folder Name"
+          value={folderName}
+          onChange={(e) => setFolderName(e.target.value)}
+        />
+        <input
+          id="files"
           type="file"
-          onChange={(e) => {
-            const files = e.target.files;
-            if (files) {
-              setFile(files[0]);
-            }
-          }}
-          accept="image/png, image/jpeg"
+          multiple
+          onChange={(e) => setFiles(e.target.files)}
         />
         <button type="submit" disabled={uploading}>
           {uploading ? "Uploading..." : "Upload"}
         </button>
       </form>
+
+      {uploadedLinks.length > 0 && (
+        <div style={{ marginTop: "20px" }}>
+          <h2>Uploaded Files:</h2>
+          <ul>
+            {uploadedLinks.map((file, index) => (
+              <li key={index}>
+                <a href={file.url} target="_blank" rel="noopener noreferrer">
+                  {file.url}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </main>
   );
 }
