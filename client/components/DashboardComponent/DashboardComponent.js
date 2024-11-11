@@ -10,13 +10,14 @@ export function DashboardComponent(props) {
                 <div className="subtitle">Score</div>
             </div>
             <div className="billboard">
-                <div className="subtitle">Type Of Vulnerabilities</div>
+                <div className="subtitle">Project Progress</div>
+            </div>
+            <div className="billboard">
+                <div className="subtitle">Type Of Vulnerabilities
+                </div>
             </div>
             <div className="billboard">
                 <div className="subtitle">Vulnerabilities</div>
-            </div>
-            <div className="billboard">
-                <div className="subtitle">Project Progress</div>
             </div>
         </div>
       </div>
