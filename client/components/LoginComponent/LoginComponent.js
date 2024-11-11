@@ -1,8 +1,9 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import "./LoginComponent.css";
 
 export function LoginComponent(props) {
-  const { loginUser } = props;
+  const { signup, signin, onLogin } = props;
+  const [error, setError] = useState("");
 
   const usernameRef = useRef(null);
   const passwordRef = useRef(null);
@@ -11,11 +12,19 @@ export function LoginComponent(props) {
     e.preventDefault();
     const username = usernameRef.current.value;
     const password = passwordRef.current.value;
+    const clickedButton = e.nativeEvent.submitter.id;
 
-    loginUser(username, password).then(() => {
-      e.target.reset();
-      //rest the form, and make the visibility of the component invisibile
-    });
+    if (clickedButton === "signin") {
+        signin(username, password, (error) => setError(error.message), () => {
+          onLogin(username);
+          e.target.reset();
+        });
+      } else if (clickedButton === "signup") {
+        signup(username, password, (error) => setError(error.message), () => {
+          onLogin(username);
+          e.target.reset();
+        });
+      }
   };
 
   return (
@@ -30,7 +39,7 @@ export function LoginComponent(props) {
         required
         ref={usernameRef}
       />
-     <input
+      <input
         type="password"
         id="form-password"
         className="form-element"
@@ -39,9 +48,15 @@ export function LoginComponent(props) {
         required
         ref={passwordRef}
       />
-      <button type="submit" className="form-element" id="submit">
-        Submit
-      </button>
+      <div className="error"></div>
+      <div id="auth-buttons_login">
+        <button type="submit" className="auth-button" id="signin">
+          Login
+        </button>
+        <button type="submit" className="auth-button" id="signup">
+          Sign Up
+        </button>
+      </div>
     </form>
   );
 }
