@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import "../UploadContentComponent/UploadContentComponent.css"; // Import global CSS
 
 export function UploadContentComponent() {
   const [files, setFiles] = useState([]);
@@ -25,7 +26,6 @@ export function UploadContentComponent() {
         contentType: file.type,
       }));
 
-      // Request to get pre-signed URLs
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: {
@@ -37,7 +37,6 @@ export function UploadContentComponent() {
       if (response.ok) {
         const uploadUrls = await response.json();
 
-        // Upload each file to S3
         await Promise.all(
           uploadUrls.map(({ url }, index) =>
             fetch(url, {
@@ -50,11 +49,10 @@ export function UploadContentComponent() {
           )
         );
 
-        // Create individual file links and set the state
         const bucketName = "securaid";
         const region = "ca-central-1";
         const fileLinks = uploadUrls.map(({ key }) => ({
-          filename: key.split("/").pop(), // Display the filename
+          filename: key.split("/").pop(),
           url: `https://${bucketName}.s3.${region}.amazonaws.com/${key}`,
         }));
 
@@ -71,40 +69,47 @@ export function UploadContentComponent() {
   };
 
   return (
-    <main>
-      <h1>Upload Files to S3</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="upload-content-wrapper">
+      <h1 className="upload-header">Upload Files to S3</h1>
+      <form className="upload-form" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Folder Name"
           value={folderName}
           onChange={(e) => setFolderName(e.target.value)}
+          className="upload-input"
         />
         <input
           id="files"
           type="file"
           multiple
           onChange={(e) => setFiles(e.target.files)}
+          className="upload-input"
         />
-        <button type="submit" disabled={uploading}>
+        <button type="submit" disabled={uploading} className="upload-button">
           {uploading ? "Uploading..." : "Upload"}
         </button>
       </form>
 
       {uploadedLinks.length > 0 && (
-        <div style={{ marginTop: "20px" }}>
-          <h2>Uploaded Files:</h2>
-          <ul>
+        <div className="uploaded-files">
+          <h2 className="uploaded-files-header">Uploaded Files:</h2>
+          <ul className="uploaded-file-list">
             {uploadedLinks.map((file, index) => (
-              <li key={index}>
-                <a href={file.url} target="_blank" rel="noopener noreferrer">
-                  {file.url}
+              <li key={index} className="uploaded-file-item">
+                <a
+                  href={file.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="uploaded-file-link"
+                >
+                  {file.filename}
                 </a>
               </li>
             ))}
           </ul>
         </div>
       )}
-    </main>
+    </div>
   );
 }
