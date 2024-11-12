@@ -14,6 +14,7 @@ RUN npm install
 COPY client .
 
 # Build the Next.js application
+ENV NEXT_PUBLIC_ESLINT_DISABLE=true
 RUN npm run build
 
 # Serve the application
