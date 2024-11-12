@@ -1,25 +1,25 @@
-# Stage 1: Build the frontend
-FROM --platform=linux/amd64 node:lts-slim as build
+# Use a stable version of Node.js
+FROM node:18-alpine AS build
 
-# Create app directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy frontend files
-COPY ./client /app
-COPY ./client/.env.local /app  
+# Copy package.json and package-lock.json specifically to leverage Docker cache
+COPY client/package*.json ./
 
-# Install dependencies and build the app
+# Install dependencies
 RUN npm install
+
+# Copy all other frontend files from the client directory
+COPY client .
+
+# Build the Next.js application
 RUN npm run build
 
-# Stage 2: Run the frontend
-FROM --platform=linux/amd64 node:lts-slim as main
-
+# Serve the application
+FROM node:18-alpine AS main
 WORKDIR /app
 COPY --from=build /app /app
 
-# Expose the port Next.js serves on
 EXPOSE 3000
-
-# Start the frontend in production mode
 CMD ["npm", "run", "start"]
