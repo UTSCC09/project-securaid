@@ -70,46 +70,52 @@ export function UploadContentComponent() {
 
   return (
     <div className="upload-content-wrapper">
-      <h1 className="upload-header">Upload Files to S3</h1>
-      <form className="upload-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Folder Name"
-          value={folderName}
-          onChange={(e) => setFolderName(e.target.value)}
-          className="upload-input"
-        />
-        <input
-          id="files"
-          type="file"
-          multiple
-          onChange={(e) => setFiles(e.target.files)}
-          className="upload-input"
-        />
-        <button type="submit" disabled={uploading} className="upload-button">
-          {uploading ? "Uploading..." : "Upload"}
-        </button>
-      </form>
+      <div className="title">Upload Files</div>
+      <div className="upload-form-display">
+        <form className="upload-form" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Folder Name"
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            className="upload-input"
+            id="upload-input_text"
+          />
+          <input
+            id="files"
+            type="file"
+            multiple
+            onChange={(e) => setFiles(e.target.files)}
+            className="upload-input"
+          />
+          <button type="submit" disabled={uploading} className="auth-button">
+            {uploading ? "Uploading..." : "Upload"}
+          </button>
+        </form>
 
-      {uploadedLinks.length > 0 && (
-        <div className="uploaded-files">
-          <h2 className="uploaded-files-header">Uploaded Files:</h2>
-          <ul className="uploaded-file-list">
-            {uploadedLinks.map((file, index) => (
-              <li key={index} className="uploaded-file-item">
-                <a
-                  href={file.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="uploaded-file-link"
-                >
-                  {file.filename}
-                </a>
-              </li>
+        {/* <div id="files-uploaded">
+        {uploadedLinks.length > 0 && (uploadedLinks.map((file, index) => (
+          <div className="uploaded-file" key={index}>
+            {file.name}
+          </div>
+        )))}
+        </div> */}
+
+        <div id="files-uploaded">
+          {uploadedLinks.length > 0 &&
+            uploadedLinks.map((file, index) => (
+              <a
+                href={file.url} // S3 URL for the href
+                target="_blank"
+                rel="noopener noreferrer"
+                className="uploaded-file-link"
+                key={index}
+              >
+                 {file.filename.split("_").slice(1).join("_") || file.filename}{" "}
+              </a>
             ))}
-          </ul>
         </div>
-      )}
+      </div>
     </div>
   );
 }
