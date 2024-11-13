@@ -15,6 +15,7 @@ COPY client .
 
 # Build the Next.js application
 ENV NEXT_PUBLIC_ESLINT_DISABLE=true
+ENV NEXT_LINT=false
 RUN npm run build
 
 # Serve the application
