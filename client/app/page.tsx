@@ -4,7 +4,7 @@ import {
   handleSignin,
   handleSignout,
   handleSignup,
-} from "../app/api/login/route.js";
+} from "../src/utils/route.js";
 import { ContentComponent } from "../components/ContentComponent/ContentComponent";
 import { LoginComponent } from "../components/LoginComponent/LoginComponent";
 
