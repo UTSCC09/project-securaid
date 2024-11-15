@@ -1,13 +1,12 @@
-"use client";
-
 import { useState } from "react";
-import "../UploadContentComponent/UploadContentComponent.css"; // Import global CSS
+import "../UploadContentComponent/UploadContentComponent.css";
 
 export function UploadContentComponent() {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [uploadedLinks, setUploadedLinks] = useState([]);
+  const author = "placeholder_author"; // Placeholder for author
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,9 +53,19 @@ export function UploadContentComponent() {
         const fileLinks = uploadUrls.map(({ key }) => ({
           filename: key.split("/").pop(),
           url: `https://${bucketName}.s3.${region}.amazonaws.com/${key}`,
+          size: files[index].size,
         }));
 
         setUploadedLinks(fileLinks);
+
+        // Send file links, metadata, and author info to the backend
+        await fetch("/api/upload/fileUpload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ folderName, files: fileLinks, author }), // Include author info
+        });
       } else {
         alert("Failed to get pre-signed URLs.");
       }
@@ -93,25 +102,17 @@ export function UploadContentComponent() {
           </button>
         </form>
 
-        {/* <div id="files-uploaded">
-        {uploadedLinks.length > 0 && (uploadedLinks.map((file, index) => (
-          <div className="uploaded-file" key={index}>
-            {file.name}
-          </div>
-        )))}
-        </div> */}
-
         <div id="files-uploaded">
           {uploadedLinks.length > 0 &&
             uploadedLinks.map((file, index) => (
               <a
-                href={file.url} // S3 URL for the href
+                href={file.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="uploaded-file-link"
                 key={index}
               >
-                 {file.filename.split("_").slice(1).join("_") || file.filename}{" "}
+                {file.filename.split("_").slice(1).join("_") || file.filename}{" "}
               </a>
             ))}
         </div>

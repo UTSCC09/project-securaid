@@ -1,12 +1,13 @@
-import mongoose from "mongoose";
+import { ObjectId } from "mongodb";
 
-const fileSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  url: { type: String, required: true },
-  size: { type: Number, required: true },
-  type: { type: String, required: true },
-  uploadedAt: { type: Date, default: Date.now },
-});
-
-// Check if the model already exists to avoid OverwriteModelError
-export default mongoose.models.File || mongoose.model("File", fileSchema);
+export default class File {
+  constructor(name, url, size, uploadDate, author, folderName) {
+    this._id = new ObjectId();
+    this.name = name;
+    this.url = url;
+    this.size = size;
+    this.uploadDate = uploadDate;
+    this.author = author;
+    this.folderName = folderName;
+  }
+}
