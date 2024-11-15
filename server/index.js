@@ -1,46 +1,43 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config({ path: ".env.local" });
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-// import { NextResponse } from "next/server";
 const session = require("express-session");
-const { serialize } = require("cookie");
+const MongoStore = require("connect-mongo");
 
 const app = express();
 const PORT = 4000;
 
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with the specific frontend origin
-    credentials: true, // Allow credentials to be included in requests
+    origin: "http://localhost:3000",
+    credentials: true,
   })
 );
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(session({
-    secret: "kobe",
+app.use(
+  session({
+    secret: "@#HJDNJ@#$32445SFjN!@#@$",
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }, // Set to true if using HTTPS
-}));
-
-// Middleware to parse username from cookies
-app.use((req, res, next) => {
-  req.username = req.cookies.username || null;
-  console.log("HTTPS request", req.username, req.method, req.url, req.body);
-  next();
-});
-
-
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      collectionName: "sessions",
+    }),
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    },
+  })
+);
 
 // MongoDB connection setup
-const client = new MongoClient(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const client = new MongoClient(process.env.MONGODB_URI);
 
 async function connectToDatabase() {
   try {
@@ -49,19 +46,12 @@ async function connectToDatabase() {
 
     const database = client.db("securaid");
     const usersCollection = database.collection("users");
-    const filesCollection = database.collection("files");
-
-    // Route to test server
-    app.get("/api/home", (req, res) => {
-      res.json({ message: "hello world" });
-    });
 
     // Route to register a new user
     app.post("/api/users", async (req, res) => {
       try {
         const { username, password } = req.body;
 
-        // Check if a user with the same username already exists
         const existingUser = await usersCollection.findOne({ username });
         if (existingUser) {
           return res.status(409).json({
@@ -70,17 +60,14 @@ async function connectToDatabase() {
           });
         }
 
-        // Hash and salt the password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Create user object with hashed password
         const user = {
           username,
           password: hashedPassword,
         };
 
-        // Insert the new user into the database
         const insertResult = await usersCollection.insertOne(user);
         res.json({ message: "User inserted", userId: insertResult.insertedId });
       } catch (error) {
@@ -94,7 +81,6 @@ async function connectToDatabase() {
       try {
         const { username, password } = req.body;
 
-        // Find the user by username
         const user = await usersCollection.findOne({ username });
         if (!user) {
           return res
@@ -102,20 +88,13 @@ async function connectToDatabase() {
             .json({ message: "No user found with that username" });
         }
 
-        // Check if the password is correct
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
           return res.status(401).json({ message: "Incorrect password" });
         }
 
-        // Set a cookie for the username
-        res.cookie("username", username, {
-          httpOnly: true, // Prevents JavaScript access to the cookie
-          secure: false, // Set to true if using HTTPS
-          maxAge: 24 * 60 * 60 * 1000, // Cookie expiration (1 day)
-        });
+        req.session.userId = user._id;
 
-        // Successful login
         res.json({ message: "Login successful", userId: user._id });
       } catch (error) {
         console.error("Error during login:", error);
@@ -123,41 +102,38 @@ async function connectToDatabase() {
       }
     });
 
-    // Protected route example
-    app.get("/api/protected", (req, res) => {
-      if (!req.username) {
+    app.get("/api/protected", async (req, res) => {
+      if (!req.session.userId) {
         return res
           .status(401)
           .json({ message: "Unauthorized. Please log in." });
       }
-      res.json({
-        message: `Welcome, ${req.username}! This is a protected route.`,
+
+      try {
+        const user = await usersCollection.findOne({
+          _id: new ObjectId(req.session.userId),
+        });
+        if (!user) {
+          return res.status(404).json({ message: "User not found." });
+        }
+
+        res.json({ username: user.username });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ message: "Internal server error." });
+      }
+    });
+
+    app.get("/api/logout", (req, res) => {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error during logout:", err);
+          return res.status(500).json({ message: "Error during logout" });
+        }
+        res.clearCookie("connect.sid");
+        res.status(200).json({ message: "Logged out successfully" });
       });
     });
-
-    // Route for user logout
-    app.get("/api/logout/", function (req, res) {
-        if (req.session) {
-            req.session.destroy(() => {
-                res.setHeader(
-                    "Set-Cookie",
-                    serialize("username", "", {
-                        path: "/",
-                        maxAge: 0, // Expire the cookie immediately
-                        secure: true,
-                        sameSite: "strict",
-                        httpOnly: true,
-                    })
-                );
-                console.log("Signout from backend")
-                res.status(200).json({ message: "Logged out successfully" });
-            });
-        } else {
-            res.status(200).json({ message: "No active session to log out." });
-        }
-    });
-
-
 
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

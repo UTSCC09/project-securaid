@@ -1,9 +1,10 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import "./LoginComponent.css";
 
 export function LoginComponent(props) {
   const { signup, signin, onLogin } = props;
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const usernameRef = useRef(null);
   const passwordRef = useRef(null);
@@ -15,16 +16,34 @@ export function LoginComponent(props) {
     const clickedButton = e.nativeEvent.submitter.id;
 
     if (clickedButton === "signin") {
-        signin(username, password, (error) => setError(error.message), () => {
+      setError(""); // Clear error when attempting to log in
+      setSuccessMessage(""); // Clear success message when attempting to log in
+      signin(
+        username,
+        password,
+        (error) => setError(error.message),
+        () => {
           onLogin(username);
           e.target.reset();
-        });
-      } else if (clickedButton === "signup") {
-        signup(username, password, (error) => setError(error.message), () => {
-          onLogin(username);
+        }
+      );
+    } else if (clickedButton === "signup") {
+      setError(""); // Clear error when attempting to sign up
+      setSuccessMessage(""); // Clear success message when attempting to sign up
+      signup(
+        username,
+        password,
+        (error) => {
+          setError(error.message);
+          setSuccessMessage(""); // Clear success message if there's an error
+        },
+        (data) => {
+          setError(""); // Clear error if sign-up is successful
+          setSuccessMessage(data.message); // Show success message
           e.target.reset();
-        });
-      }
+        }
+      );
+    }
   };
 
   return (
@@ -48,7 +67,8 @@ export function LoginComponent(props) {
         required
         ref={passwordRef}
       />
-      <div className="error"></div>
+      {error && <div className="error">{error}</div>}
+      {successMessage && <div className="success">{successMessage}</div>}
       <div id="auth-buttons_login">
         <button type="submit" className="auth-button" id="signin">
           Login

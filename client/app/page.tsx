@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import {
-  getUsername,
   handleSignin,
   handleSignout,
   handleSignup,
@@ -10,34 +9,25 @@ import { ContentComponent } from "../components/ContentComponent/ContentComponen
 import { LoginComponent } from "../components/LoginComponent/LoginComponent";
 
 function Page() {
-  // Create a state for username
   const [username, setUsername] = useState<string | null>(null);
 
-  // Check if the user is already logged in on mount
   useEffect(() => {
-    const currentUsername = getUsername();
-    if (currentUsername) {
-      setUsername(currentUsername);
-    } else {
-      async function fetchUsername() {
-        try {
-          const response = await fetch("http://localhost:4000/api/protected", {
-            method: "GET",
-            credentials: "include",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setUsername(data.username); // Assuming API returns the username if logged in
-          }
-        } catch (error) {
-          console.error("Error fetching username:", error);
+    async function fetchUsername() {
+      try {
+        const response = await fetch("http://localhost:4000/api/protected", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUsername(data.username);
         }
+      } catch (error) {
+        console.error("Error fetching username:", error);
       }
-      fetchUsername();
     }
+    fetchUsername();
   }, []);
-
-
 
   return (
     <>
@@ -45,19 +35,22 @@ function Page() {
       <h4 id="homepage_slogan">A secure place for everyone</h4>
 
       {username ? (
-        // Show ContentComponent and sign-out button when logged in
         <>
-          <div id="auth-buttons">
-          <button className="auth-button" id="signout" onClick={() => handleSignout(() => setUsername(null))}>
-    Sign Out
-</button>
+          <div id="signed-in-bar">
+            <span id="welcome-message">@{username}</span>
+            <button
+              className="sign-out-button"
+              id="sign-out-button"
+              onClick={() => handleSignout(() => setUsername(null))}
+            >
+              Sign Out
+            </button>
           </div>
           <div id="container">
             <ContentComponent />
           </div>
         </>
       ) : (
-        // Show LoginComponent when not logged in
         <div id="loginComponent">
           <LoginComponent
             signup={handleSignup}
