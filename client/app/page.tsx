@@ -11,47 +11,51 @@ function Page() {
   useEffect(() => {
     async function fetchUsername() {
       try {
-        const response = await fetch("/api/login", { method: "GET" });
+        const response = await fetch("http://localhost:4000/api/protected", {
+          method: "GET",
+          credentials: "include",
+        });
         if (response.ok) {
           const data = await response.json();
-          setUsername(data.username);
+          setUsername(data.username); // Assuming API returns the username if logged in
         }
       } catch (error) {
-        console.error("Error fetching username:", error);
       }
     }
-
     fetchUsername();
   }, []);
 
   // Sign in function that calls the API
   const handleSignin = async (username: string, password: string) => {
     try {
-      const response = await fetch("/api/login", {
+      console.log("Signing in with", username)
+      const response = await fetch("http://localhost:4000/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, action: "signin" }),
+        body: JSON.stringify({ username, password }),
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
         setUsername(data.username); // Assume API returns the username
       }
     } catch (error) {
-      console.error("Sign-in error:", error);
     }
   };
 
-  // Sign up function that calls the API
   const handleSignup = async (username: string, password: string) => {
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("http://localhost:4000/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, action: "signup" }),
+        body: JSON.stringify({ username, password }),
       });
       if (response.ok) {
         const data = await response.json();
-        setUsername(data.username); // Assume API returns the username
+        setUsername(data.userId ? username : ""); // Assuming successful response contains `userId`
+        console.log("Sign-up successful:", data);
+      } else {
+        console.error("Sign-up failed:", await response.text());
       }
     } catch (error) {
       console.error("Sign-up error:", error);
@@ -59,21 +63,40 @@ function Page() {
   };
 
   // Sign out function
-  const handleSignOut = () => {
-    document.cookie = ""; // Clear the cookie
-    setUsername(null);
+  const handleSignOut = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (response.ok) {
+        setUsername(null);
+        console.log("Sign-out successful");
+      }
+    } catch (error) {
+      console.error("Sign-out error:", error);
+    }
   };
 
   return (
     <>
-      <div id="login_container">
-        <div id="auth-buttons">
-          <button className="auth-button" id="signout" onClick={handleSignOut}>
-            Sign Out
-          </button>
-        </div>
-        <h1 id="homepage_title">Securaid</h1>
-        <h4 id="homepage_slogan">A secure place for everyone</h4>
+      <h1 id="homepage_title">Securaid</h1>
+      <h4 id="homepage_slogan">A secure place for everyone</h4>
+
+      {username ? (
+        // Show ContentComponent and sign-out button when logged in
+        <>
+          <div id="auth-buttons">
+            <button className="auth-button" id="signout" onClick={handleSignOut}>
+              Sign Out
+            </button>
+          </div>
+          <div id="container">
+            <ContentComponent />
+          </div>
+        </>
+      ) : (
+        // Show LoginComponent when not logged in
         <div id="loginComponent">
           <LoginComponent
             signup={handleSignup}
@@ -81,10 +104,7 @@ function Page() {
             onLogin={setUsername}
           />
         </div>
-      </div>
-      <div id="container">
-        <ContentComponent />
-      </div>
+      )}
     </>
   );
 }
