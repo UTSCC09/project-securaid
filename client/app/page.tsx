@@ -1,12 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import {
-  handleSignin,
-  handleSignout,
-  handleSignup,
-} from "../src/utils/route.js";
+import { handleSignin, handleSignout, handleSignup } from "../src/utils/route.js";
 import { ContentComponent } from "../components/ContentComponent/ContentComponent";
 import { LoginComponent } from "../components/LoginComponent/LoginComponent";
+import { Globe } from "../components/Globe/Globe"; // Import the Globe component here
 
 function Page() {
   const [username, setUsername] = useState<string | null>(null);
@@ -31,34 +28,52 @@ function Page() {
 
   return (
     <>
-      <h1 id="homepage_title">Securaid</h1>
-      <h4 id="homepage_slogan">A secure place for everyone</h4>
+      <div style={{ position: "relative" }}>
+        <h1 id="homepage_title">Securaid</h1>
+        <h4 id="homepage_slogan">A secure place for everyone</h4>
 
-      {username ? (
-        <>
-          <div id="signed-in-bar">
-            <span id="welcome-message">@{username}</span>
-            <button
-              className="sign-out-button"
-              id="sign-out-button"
-              onClick={() => handleSignout(() => setUsername(null))}
+        {username ? (
+          <>
+            <div id="signed-in-bar">
+              <span id="welcome-message">@{username}</span>
+              <button
+                className="sign-out-button"
+                id="sign-out-button"
+                onClick={() => handleSignout(() => setUsername(null))}
+              >
+                Sign Out
+              </button>
+            </div>
+            <div id="container">
+              <ContentComponent />
+            </div>
+          </>
+        ) : (
+          <>
+            <div id="loginComponent">
+              <LoginComponent
+                signup={handleSignup}
+                signin={handleSignin}
+                onLogin={setUsername}
+              />
+            </div>
+
+            {/* Show Globe below the Login component */}
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 20px)", // Position the globe below the login component
+                left: 0,
+                width: "100%",
+                height: "400px",
+                zIndex: -1,  // Keep the globe in the background
+              }}
             >
-              Sign Out
-            </button>
-          </div>
-          <div id="container">
-            <ContentComponent />
-          </div>
-        </>
-      ) : (
-        <div id="loginComponent">
-          <LoginComponent
-            signup={handleSignup}
-            signin={handleSignin}
-            onLogin={setUsername}
-          />
-        </div>
-      )}
+              <Globe className="globe" />
+            </div>
+          </>
+        )}
+      </div>
     </>
   );
 }
