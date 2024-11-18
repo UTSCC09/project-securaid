@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { handleSignin, handleSignout, handleSignup } from "../src/utils/route.js";
 import { ContentComponent } from "../components/ContentComponent/ContentComponent";
-import { LoginComponent } from "../components/LoginComponent/LoginComponent";
 import { Globe } from "../components/Globe/Globe"; // Import the Globe component here
+import { HyperText } from "../components/HyperText/HyperText";
+import { LoginComponent } from "../components/LoginComponent/LoginComponent";
+import { handleSignin, handleSignout, handleSignup } from "../src/utils/route.js";
+
 
 function Page() {
   const [username, setUsername] = useState<string | null>(null);
@@ -35,7 +37,14 @@ function Page() {
         {username ? (
           <>
             <div id="signed-in-bar">
-              <span id="welcome-message">@{username}</span>
+              <div id="welcome-message">
+                <HyperText
+                  text={`Welcome ${username}`}
+                  duration={2000}
+                  className="text-2xl font-semibold text-orange"
+                  animateOnLoad={true}
+                />
+              </div>
               <button
                 className="sign-out-button"
                 id="sign-out-button"
@@ -45,7 +54,7 @@ function Page() {
               </button>
             </div>
             <div id="container">
-              <ContentComponent />
+            <ContentComponent userId={username} />
             </div>
           </>
         ) : (

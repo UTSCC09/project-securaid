@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import "../UploadContentComponent/UploadContentComponent.css"; // Import global CSS
+import "../UploadContentComponent/UploadContentComponent.css";
 
-export function UploadContentComponent() {
+export function UploadContentComponent({ userId, onUploadSuccess }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [folderName, setFolderName] = useState("");
@@ -57,12 +57,37 @@ export function UploadContentComponent() {
         }));
 
         setUploadedLinks(fileLinks);
+
+        const projectResponse = await fetch(
+          "http://localhost:4000/api/projects",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              folderName,
+              uploadedLinks: fileLinks,
+              userId,
+            }),
+          }
+        );
+
+        if (projectResponse.ok) {
+          const { projectId } = await projectResponse.json();
+          console.log(`Project created successfully with ID: ${projectId}`);
+
+          // Notify parent about successful upload
+          onUploadSuccess();
+        } else {
+          alert("Failed to create project in the backend.");
+        }
       } else {
-        alert("Failed to get pre-signed URLs.");
+        alert("Failed to upload files.");
       }
     } catch (error) {
-      console.error("Error during upload:", error);
-      alert("An error occurred during the upload.");
+      console.error("Error during upload and project creation:", error);
+      alert("An error occurred during the upload or project creation.");
     } finally {
       setUploading(false);
     }
@@ -93,19 +118,11 @@ export function UploadContentComponent() {
           </button>
         </form>
 
-        {/* <div id="files-uploaded">
-        {uploadedLinks.length > 0 && (uploadedLinks.map((file, index) => (
-          <div className="uploaded-file" key={index}>
-            {file.name}
-          </div>
-        )))}
-        </div> */}
-
         <div id="files-uploaded">
           {uploadedLinks.length > 0 &&
             uploadedLinks.map((file, index) => (
               <a
-                href={file.url} // S3 URL for the href
+                href={file.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="uploaded-file-link"

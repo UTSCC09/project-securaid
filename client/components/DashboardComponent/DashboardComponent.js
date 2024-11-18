@@ -1,6 +1,5 @@
 import "./DashboardComponent.css";
-export function DashboardComponent(props) {
-  const {} = props;
+export function DashboardComponent({userId}) {
   return (
     <div className="dashboard_container">
       <div className="title">Dashboard</div>
