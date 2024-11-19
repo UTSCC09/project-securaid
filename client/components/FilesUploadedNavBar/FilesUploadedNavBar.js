@@ -5,6 +5,8 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
   const [projects, setProjects] = useState([]);
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
+  const [hoveredFile, setHoveredFile] = useState(null);
+
 
   // Fetch projects from the backend
   const fetchProjects = async () => {
@@ -27,6 +29,52 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
       console.error("Error fetching projects:", error);
     }
   };
+
+  const handleFileDelete = async (fileId, projectId) => {
+    console.log("Deleting file with ID:", fileId);
+
+    try {
+      const response = await fetch(`http://localhost:4000/api/files/${fileId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const { deleteProject } = await response.json();
+
+        if (deleteProject) {
+          // Delete the project if no files remain
+          const projectResponse = await fetch(
+            `http://localhost:4000/api/projects/${projectId}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (projectResponse.ok) {
+            alert("Project deleted as it had no remaining files.");
+            fetchProjects(); // Refresh the list of projects
+          } else {
+            alert("Error deleting project.");
+          }
+        } else {
+          // Project still exists, refresh its files
+          await fetchFiles(projectId);
+        }
+      } else {
+        alert("Error deleting file.");
+      }
+    } catch (error) {
+      console.error("Error during file deletion:", error);
+      alert("An error occurred during file deletion.");
+    }
+  };
+
 
   // Fetch files for a specific project
   const fetchFiles = async (projectId) => {
@@ -104,15 +152,29 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
                   {isExpanded &&
                     (filesByProject[project._id] && filesByProject[project._id].length > 0 ? (
                       filesByProject[project._id].map((file) => (
+                        <div
+                        className="file-item-element"
+                        key={file._id}
+                        onMouseEnter={() => setHoveredFile(file._id)}
+                        onMouseLeave={() => setHoveredFile(null)}
+                      >
                         <a
-                          key={file._id}
                           href={file.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="file-link"
                         >
-                          {file.filename.split("_").slice(1).join("_") || file.filename}{" "}
+                          {file.filename.split("_").slice(1).join("_") || file.filename}
                         </a>
+                        {hoveredFile === file._id && (
+                          <button
+                            className="delete-file-button"
+                            onClick={() => handleFileDelete(file._id, project._id)}
+                          >
+                            x
+                          </button>
+                        )}
+                      </div>
                       ))
                     ) : (
                       <div className="no-files">No files found.</div>

@@ -1,5 +1,6 @@
 .files-uploaded-navbar {
-  width: fit-content;
+  min-width: 250px;
+  max-width: 350px;
   padding: 25px;
   border-radius: 10px;
   display: flex;
@@ -57,6 +58,35 @@
   color: var(--orange);
   transition: 0.3s ease-in-out;
 }
+
+.file-item-element {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.delete-file-button {
+  display: none;
+  background-color: #ff6b6b;
+  color: white;
+  border-radius: 25px;
+  height: 25px;
+width: 25px;
+justify-content: center;
+text-align: center;
+align-items: center;
+  cursor: pointer;
+}
+
+.file-item-element:hover .delete-file-button {
+  display: inline-block;
+}
+
+.delete-file-button:hover {
+  background-color: #ff4c4c;
+}
+
+
 
 .file-container {
   margin-left: 20px;

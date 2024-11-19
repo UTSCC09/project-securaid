@@ -1,5 +1,6 @@
 "use client";
 
+import ExifReader from "exifreader"; // Import the ExifReader library
 import { useState } from "react";
 import "../UploadContentComponent/UploadContentComponent.css";
 
@@ -8,6 +9,35 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
   const [uploading, setUploading] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [uploadedLinks, setUploadedLinks] = useState([]);
+
+  const checkImageMetadata = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    try {
+      const tags = ExifReader.load(arrayBuffer);
+
+      // Check for suspicious metadata
+      const suspiciousMetadata = ["GPSLatitude", "GPSLongitude", "Software", "Comment"];
+      for (const key of suspiciousMetadata) {
+        if (tags[key]) {
+          alert(`Warning: Suspicious metadata detected in ${file.name} - ${key}`);
+          return false;
+        }
+      }
+
+      // Check if the file has steganography indicators (hidden data)
+      if (tags["MakerNote"] || tags["UserComment"]) {
+        alert(`Warning: Hidden metadata detected in ${file.name}. File might contain steganography.`);
+        return false;
+      }
+
+      // If no issues, return true
+      return true;
+    } catch (error) {
+      console.warn(`Error reading metadata for ${file.name}:`, error);
+      alert(`Error analyzing metadata for ${file.name}. The file cannot be uploaded.`);
+      return false;
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +51,17 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
     setUploadedLinks([]);
 
     try {
+      // Validate image files
+      for (const file of files) {
+        if (file.type.startsWith("image/")) {
+          const isValid = await checkImageMetadata(file);
+          if (!isValid) {
+            setUploading(false);
+            return; // Stop further processing if any file fails validation
+          }
+        }
+      }
+
       const fileData = Array.from(files).map((file) => ({
         filename: file.name,
         contentType: file.type,
@@ -58,6 +99,7 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
 
         setUploadedLinks(fileLinks);
 
+        const owner = "owner";
         const projectResponse = await fetch(
           "http://localhost:4000/api/projects",
           {
@@ -69,6 +111,7 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
               folderName,
               uploadedLinks: fileLinks,
               userId,
+              owner,
             }),
           }
         );

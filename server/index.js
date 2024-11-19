@@ -109,7 +109,7 @@ async function connectToDatabase() {
         // Log the incoming request body for debugging
         console.log("Incoming request body:", req.body);
 
-        const { folderName, uploadedLinks, userId } = req.body;
+        const { folderName, uploadedLinks, userId, ownership } = req.body;
 
         // Input validation
         if (!folderName || !uploadedLinks || !Array.isArray(uploadedLinks) || uploadedLinks.length === 0 || !userId) {
@@ -128,6 +128,7 @@ async function connectToDatabase() {
         const project = {
           folderName,
           userId,
+          ownership,
           createdAt: new Date(),
         };
 
@@ -143,6 +144,7 @@ async function connectToDatabase() {
           userId,
           filename: file.filename,
           url: file.url,
+          ownership,
           createdAt: new Date(),
         }));
 
@@ -207,6 +209,69 @@ async function connectToDatabase() {
         res.status(500).json({ message: "Internal server error." });
       }
     });
+    app.delete("/api/files/:fileId", async (req, res) => {
+      try {
+        const { fileId } = req.params;
+        console.log("------> File ID:", fileId);
+
+        if (!fileId) {
+          return res.status(400).json({ error: "File ID is required." });
+        }
+
+        // Convert fileId to ObjectId
+        const fileObject = new ObjectId(fileId);
+
+        // Find and delete the file
+        const file = await filesCollection.findOne({ _id: fileObject });
+        if (!file) {
+          console.log("----> File not found");
+          return res.status(404).json({ error: "File not found." });
+        }
+
+        await filesCollection.deleteOne({ _id: fileObject });
+
+        // Check if the project has remaining files
+        const remainingFiles = await filesCollection
+          .find({ projectId: file.projectId })
+          .toArray();
+
+        console.log("Remaining files:", remainingFiles);
+
+        if (remainingFiles.length === 0) {
+          return res
+            .status(200)
+            .json({ message: "File deleted. Project is now empty.", deleteProject: true });
+        }
+
+        res.status(200).json({ message: "File deleted successfully.", deleteProject: false });
+      } catch (error) {
+        console.error("Error deleting file:", error);
+        res.status(500).json({ error: "An error occurred while deleting the file." });
+      }
+    });
+
+    app.delete("/api/projects/:projectId", async (req, res) => {
+      try {
+        const { projectId } = req.params;
+
+        if (!projectId) {
+          return res.status(400).json({ error: "Project ID is required." });
+        }
+
+        // Delete all files associated with the project
+        await filesCollection.deleteMany({ projectId: new ObjectId(projectId) });
+
+        // Delete the project
+        await projectCollection.deleteOne({ _id: new ObjectId(projectId) });
+
+        res.status(200).json({ message: "Project and associated files deleted successfully." });
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        res.status(500).json({ error: "An error occurred while deleting the project." });
+      }
+    });
+
+
     app.get("/api/files", async (req, res) => {
       try {
         const { userId, projectId } = req.query;
