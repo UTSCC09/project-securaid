@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import "./FilesUploadedNavBar.css";
+import { RiDeleteBin6Line } from "react-icons/ri";
+
 
 export function FilesUploadedNavBar({ userId, refreshTrigger }) {
   const [projects, setProjects] = useState([]);
@@ -167,12 +169,14 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
                           {file.filename.split("_").slice(1).join("_") || file.filename}
                         </a>
                         {hoveredFile === file._id && (
-                          <button
-                            className="delete-file-button"
-                            onClick={() => handleFileDelete(file._id, project._id)}
-                          >
-                            x
-                          </button>
+                         <button
+                         className="delete-file-button"
+                         onClick={() => handleFileDelete(file._id, project._id)}
+                         aria-label="Delete File"
+                       >
+                         <RiDeleteBin6Line size={24} color="white" />
+
+                       </button>
                         )}
                       </div>
                       ))

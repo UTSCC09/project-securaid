@@ -1,6 +1,6 @@
 .files-uploaded-navbar {
   min-width: 250px;
-  max-width: 350px;
+  width: fit-content;
   padding: 25px;
   border-radius: 10px;
   display: flex;
@@ -60,30 +60,41 @@
 }
 
 .file-item-element {
+  border-bottom: 2px solid transparent;
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: space-between; /* Ensure proper spacing between elements */
+  gap: 10px; /* Add some spacing between the file name and the delete button */
+  transition: 0.3s ease-in-out;
+
 }
 
 .delete-file-button {
   display: none;
-  background-color: #ff6b6b;
   color: white;
   border-radius: 25px;
   height: 25px;
-width: 25px;
-justify-content: center;
-text-align: center;
-align-items: center;
+  width: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
+  transition: 0.3s ease-in-out;
 }
 
-.file-item-element:hover .delete-file-button {
-  display: inline-block;
+.file-item-element:hover{
+  display: flex;
+  border-bottom: 2px solid var(--orange);
+  transition: 0.3s ease-in-out;
 }
+
 
 .delete-file-button:hover {
-  background-color: #ff4c4c;
+  background-color: red;
+  padding: 3px;
+transition: 0.3s ease-in-out;
 }
 
 
@@ -102,20 +113,22 @@ align-items: center;
   color: var(--font_colour);
   background-color: #171717;
   padding: 3px 3px 3px 1px;
-  text-wrap: wrap;
-  transition: 0.2s ease-in-out;
-  width: 100%;;
-  height: fit-content;
-  border-bottom: 2px solid #171717;
+  white-space: nowrap; /* Ensure the text is on a single line */
+  overflow: hidden; /* Hide overflowing content */
+  text-overflow: ellipsis; /* Show ellipsis for overflowing text */
+  max-width: calc(100% - 40px); /* Limit width to leave space for the delete button */
   transition: 0.3s ease-in-out;
-
 }
 
 .file-link:hover {
-  border-bottom: 2px solid var(--orange);
+  white-space: normal; /* Allow text to wrap on hover */
+  overflow: visible; /* Show the full text on hover */
+  background-color: #222; /* Optional: Slightly highlight the link background */
   color: white;
   padding: 3px 3px 3px 5px;
   transition: 0.3s ease-in-out;
+  z-index: 10; /* Ensure it appears above other elements */
+  position: relative; /* Positioning to avoid layout issues */
 }
 
 .no-files {
