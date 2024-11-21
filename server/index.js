@@ -16,26 +16,20 @@ dotenv.config({ path: envFile });
 const app = express();
 const PORT = 4000;
 
-const allowedOrigins = [
-  "http://34.130.102.184", // Production frontend
-  "http://localhost:3000", // Development frontend
-];
+// Allow CORS based on environment
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? process.env.FRONTEND_URL
+    : process.env.FRONTEND_URL;
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: process.env.FRONTEND_URL, // Ensure FRONTEND_URL is correctly set in .env.production
     credentials: true,
   })
 );
-
-console.log(`Environment: ${process.env.NODE_ENV}`);
-console.log(`CORS Origin: ${allowedOrigins}`);
 
 // Middleware setup
 app.use(express.json());
@@ -50,7 +44,7 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Only true for HTTPS in production
+      secure: false, // Only true for HTTPS in production
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
