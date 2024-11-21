@@ -1,18 +1,25 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
-require("dotenv").config({ path: ".env.local" });
+const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
+const envFile =
+  process.env.NODE_ENV === "production"
+    ? ".env.production"
+    : ".env.development";
+dotenv.config({ path: envFile });
+
 const app = express();
 const PORT = 4000;
 
+// Allow CORS based on environment
 const allowedOrigins =
   process.env.NODE_ENV === "production"
-    ? process.env.PROD_FRONTEND_URL
+    ? process.env.FRONTEND_URL
     : process.env.FRONTEND_URL;
 
 app.use(
@@ -25,9 +32,9 @@ app.use(
 console.log(`Environment: ${process.env.NODE_ENV}`);
 console.log(`CORS Origin: ${allowedOrigins}`);
 
+// Middleware setup
 app.use(express.json());
 app.use(cookieParser());
-
 app.use(
   session({
     secret: "@#HJDNJ@#$32445SFjN!@#@$",
@@ -38,7 +45,7 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production", // True for HTTPS
+      secure: process.env.NODE_ENV === "production", // Only true for HTTPS in production
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
