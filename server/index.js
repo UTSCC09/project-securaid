@@ -16,15 +16,20 @@ dotenv.config({ path: envFile });
 const app = express();
 const PORT = 4000;
 
-// Allow CORS based on environment
-const allowedOrigins =
-  process.env.NODE_ENV === "production"
-    ? process.env.FRONTEND_URL
-    : process.env.FRONTEND_URL;
+const allowedOrigins = [
+  "http://34.130.102.184", // Production frontend
+  "http://localhost:3000", // Development frontend
+];
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
