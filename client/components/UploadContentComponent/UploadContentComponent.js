@@ -93,7 +93,6 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
         contentType: file.type,
       }));
 
-      // Step 1: Get pre-signed URLs from the backend
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,7 +108,6 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
 
       const uploadUrls = await response.json();
 
-      // Step 2: Upload files to S3
       await Promise.all(
         uploadUrls.map(({ url }, index) =>
           fetch(url, {
@@ -125,9 +123,15 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
         url: `https://securaid.s3.ca-central-1.amazonaws.com/${key}`,
       }));
 
-      setUploadedLinks(fileLinks);
+      // Scan files with VirusTotal
+      const scanResults = await Promise.all(
+        fileLinks.map(async (fileLink) => {
+          const scanId = await scanWithVirusTotal(fileLink.url);
+          return { ...fileLink, scanId };
+        })
+      );
 
-      // Step 3: Save project to backend
+      // Save project and file metadata to the backend
       const projectResponse = await fetch(
         "http://localhost:4000/api/projects",
         {
@@ -137,7 +141,7 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
           },
           body: JSON.stringify({
             folderName,
-            uploadedLinks: fileLinks,
+            uploadedLinks: scanResults, // Includes scanId
             userId,
           }),
         }
@@ -150,22 +154,8 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
       const { projectId } = await projectResponse.json();
       console.log(`Project created successfully with ID: ${projectId}`);
 
-      // Step 4: Scan each uploaded file with VirusTotal
-      const scanResults = await Promise.all(
-        fileLinks.map(async (fileLink) => {
-          const scanId = await scanWithVirusTotal(fileLink.url);
-          return { ...fileLink, scanId };
-        })
-      );
-
-      console.log("VirusTotal Scan Results:", scanResults);
-
-      // Step 5: Notify parent component
       if (onUploadSuccess) {
-        onUploadSuccess({
-          uploadedFiles: fileLinks,
-          scanResults,
-        });
+        onUploadSuccess({ uploadedFiles: fileLinks, scanResults });
       }
     } catch (error) {
       console.error("Error during upload and project creation:", error);

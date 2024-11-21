@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./FilesUploadedNavBar.css";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-export function FilesUploadedNavBar({ userId, refreshTrigger }) {
+export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
   const [projects, setProjects] = useState([]);
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
@@ -23,7 +23,6 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched projects:", data.projects);
         setProjects(data.projects || []);
       } else {
         console.error("Failed to fetch projects:", await response.json());
@@ -33,6 +32,34 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
     }
   };
 
+  // Fetch files for a specific project
+  const fetchFiles = async (projectId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/files?userId=${userId}&projectId=${projectId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFilesByProject((prev) => ({
+          ...prev,
+          [projectId]: data.files || [],
+        }));
+      } else {
+        console.error("Failed to fetch files:", await response.json());
+      }
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    }
+  };
+
+  // Delete a file
   const handleFileDelete = async (fileId, projectId) => {
     console.log("Deleting file with ID:", fileId);
 
@@ -81,32 +108,18 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
     }
   };
 
-  // Fetch files for a specific project
-  const fetchFiles = async (projectId) => {
+  // View scan results
+  const handleViewResults = async (scanId) => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/files?userId=${userId}&projectId=${projectId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
+      const response = await fetch(`/api/virustotal-results?scanId=${scanId}`);
       if (response.ok) {
-        const data = await response.json();
-        console.log(`Fetched files for project ${projectId}:`, data.files);
-
-        setFilesByProject((prev) => ({
-          ...prev,
-          [projectId]: data.files || [],
-        }));
+        const result = await response.json();
+        onViewResults(result); // Pass results to parent component
       } else {
-        console.error("Failed to fetch files:", await response.json());
+        console.error("Failed to fetch scan results");
       }
     } catch (error) {
-      console.error("Error fetching files:", error);
+      console.error("Error fetching scan results:", error);
     }
   };
 
@@ -134,13 +147,7 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
       <div className="files-uploaded-navbar-content">
         {projects.length > 0 ? (
           projects.map((project) => {
-            if (typeof project.folderName !== "string") {
-              console.error("Invalid project folderName:", project);
-              return null;
-            }
-
             const isExpanded = expandedProjects.includes(project._id);
-
             return (
               <div key={project._id} className="project-item">
                 <button
@@ -149,47 +156,40 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
                 >
                   {project.folderName}
                 </button>
-                <div
-                  className={`file-container ${
-                    isExpanded ? "expanded" : "collapsed"
-                  }`}
-                >
-                  {isExpanded &&
-                    (filesByProject[project._id] &&
-                    filesByProject[project._id].length > 0 ? (
-                      filesByProject[project._id].map((file) => (
-                        <div
-                          className="file-item-element"
-                          key={file._id}
-                          onMouseEnter={() => setHoveredFile(file._id)}
-                          onMouseLeave={() => setHoveredFile(null)}
+                {isExpanded &&
+                  (filesByProject[project._id] || []).map((file) => (
+                    <div
+                      key={file._id}
+                      className="file-item-element"
+                      onMouseEnter={() => setHoveredFile(file._id)}
+                      onMouseLeave={() => setHoveredFile(null)}
+                    >
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="file-link"
+                      >
+                        {file.filename}
+                      </a>
+                      <button
+                        className="view-results-button"
+                        onClick={() => handleViewResults(file.scanId)}
+                      >
+                        View Results
+                      </button>
+                      {hoveredFile === file._id && (
+                        <button
+                          className="delete-file-button"
+                          onClick={() =>
+                            handleFileDelete(file._id, project._id)
+                          }
                         >
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="file-link"
-                          >
-                            {file.filename.split("_").slice(1).join("_") ||
-                              file.filename}
-                          </a>
-                          {hoveredFile === file._id && (
-                            <button
-                              className="delete-file-button"
-                              onClick={() =>
-                                handleFileDelete(file._id, project._id)
-                              }
-                              aria-label="Delete File"
-                            >
-                              <RiDeleteBin6Line size={24} color="white" />
-                            </button>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="no-files">No files found.</div>
-                    ))}
-                </div>
+                          <RiDeleteBin6Line size={24} color="white" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
               </div>
             );
           })

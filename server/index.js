@@ -106,25 +106,21 @@ async function connectToDatabase() {
 
     app.post("/api/projects", async (req, res) => {
       try {
-        // Log the incoming request body for debugging
-        console.log("Incoming request body:", req.body);
-
         const { folderName, uploadedLinks, userId, ownership } = req.body;
 
-        // Input validation
-        if (!folderName || !uploadedLinks || !Array.isArray(uploadedLinks) || uploadedLinks.length === 0 || !userId) {
-          console.log("Invalid input: Missing folderName, uploadedLinks, or userId.");
+        if (
+          !folderName ||
+          !uploadedLinks ||
+          !Array.isArray(uploadedLinks) ||
+          uploadedLinks.length === 0 ||
+          !userId
+        ) {
           return res.status(400).json({
-            error: "Invalid input. Folder name, user ID, and file links are required.",
+            error:
+              "Invalid input. Folder name, user ID, and file links are required.",
           });
         }
 
-        // Log the validated inputs
-        console.log("Validated folderName:", folderName);
-        console.log("Validated uploadedLinks:", uploadedLinks);
-        console.log("Validated userId:", userId);
-
-        // Create the project object
         const project = {
           folderName,
           userId,
@@ -132,40 +128,33 @@ async function connectToDatabase() {
           createdAt: new Date(),
         };
 
-        // Insert the project into the projects collection
         const insertResult = await projectCollection.insertOne(project);
         const projectId = insertResult.insertedId;
 
-        console.log("Project created with ID:", projectId);
-
-        // Prepare file documents for insertion
         const fileDocuments = uploadedLinks.map((file) => ({
           projectId,
           userId,
           filename: file.filename,
           url: file.url,
+          scanId: file.scanId || null, // Include scanId
           ownership,
           createdAt: new Date(),
         }));
 
-        console.log("File documents prepared for insertion:", fileDocuments);
+        await filesCollection.insertMany(fileDocuments);
 
-        // Insert files into the files collection
-        const filesInsertResult = await filesCollection.insertMany(fileDocuments);
-
-        console.log("Files inserted:", filesInsertResult.insertedCount);
-
-        // Respond with success
         res.status(201).json({
           message: "Project and files created successfully",
           projectId,
         });
       } catch (error) {
-        // Log the error details
         console.error("Error creating project and saving file links:", error);
-        res.status(500).json({ error: "An error occurred while creating the project." });
+        res
+          .status(500)
+          .json({ error: "An error occurred while creating the project." });
       }
     });
+
     app.get("/api/projects", async (req, res) => {
       try {
         const { userId } = req.query;
@@ -183,10 +172,11 @@ async function connectToDatabase() {
         res.status(200).json({ projects });
       } catch (error) {
         console.error("Error fetching projects:", error);
-        res.status(500).json({ error: "An error occurred while fetching projects." });
+        res
+          .status(500)
+          .json({ error: "An error occurred while fetching projects." });
       }
     });
-
 
     app.get("/api/protected", async (req, res) => {
       if (!req.session.userId) {
@@ -240,13 +230,23 @@ async function connectToDatabase() {
         if (remainingFiles.length === 0) {
           return res
             .status(200)
-            .json({ message: "File deleted. Project is now empty.", deleteProject: true });
+            .json({
+              message: "File deleted. Project is now empty.",
+              deleteProject: true,
+            });
         }
 
-        res.status(200).json({ message: "File deleted successfully.", deleteProject: false });
+        res
+          .status(200)
+          .json({
+            message: "File deleted successfully.",
+            deleteProject: false,
+          });
       } catch (error) {
         console.error("Error deleting file:", error);
-        res.status(500).json({ error: "An error occurred while deleting the file." });
+        res
+          .status(500)
+          .json({ error: "An error occurred while deleting the file." });
       }
     });
 
@@ -259,25 +259,34 @@ async function connectToDatabase() {
         }
 
         // Delete all files associated with the project
-        await filesCollection.deleteMany({ projectId: new ObjectId(projectId) });
+        await filesCollection.deleteMany({
+          projectId: new ObjectId(projectId),
+        });
 
         // Delete the project
         await projectCollection.deleteOne({ _id: new ObjectId(projectId) });
 
-        res.status(200).json({ message: "Project and associated files deleted successfully." });
+        res
+          .status(200)
+          .json({
+            message: "Project and associated files deleted successfully.",
+          });
       } catch (error) {
         console.error("Error deleting project:", error);
-        res.status(500).json({ error: "An error occurred while deleting the project." });
+        res
+          .status(500)
+          .json({ error: "An error occurred while deleting the project." });
       }
     });
-
 
     app.get("/api/files", async (req, res) => {
       try {
         const { userId, projectId } = req.query;
 
         if (!userId || !projectId) {
-          return res.status(400).json({ error: "User ID and Project ID are required." });
+          return res
+            .status(400)
+            .json({ error: "User ID and Project ID are required." });
         }
 
         // Fetch files by userId and projectId
@@ -289,10 +298,11 @@ async function connectToDatabase() {
         res.status(200).json({ files });
       } catch (error) {
         console.error("Error fetching files:", error);
-        res.status(500).json({ error: "An error occurred while fetching files." });
+        res
+          .status(500)
+          .json({ error: "An error occurred while fetching files." });
       }
     });
-
 
     app.get("/api/logout", (req, res) => {
       req.session.destroy((err) => {

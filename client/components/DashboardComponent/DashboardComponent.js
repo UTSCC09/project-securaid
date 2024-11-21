@@ -5,17 +5,11 @@ export function DashboardComponent({ scanResults }) {
     <div className="dashboard_container">
       <div className="title">Dashboard</div>
       <div className="content">
-        {scanResults && scanResults.length > 0 ? (
-          scanResults.map((result, index) => (
-            <div key={index} className="scan-result">
-              <div>
-                <strong>Filename:</strong> {result.filename}
-              </div>
-              <div>
-                <strong>Scan ID:</strong> {result.scanId}
-              </div>
-            </div>
-          ))
+        {scanResults ? (
+          <div>
+            <strong>Scan Results:</strong>
+            <pre>{JSON.stringify(scanResults, null, 2)}</pre>
+          </div>
         ) : (
           <div>No scan results available.</div>
         )}
