@@ -12,7 +12,7 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
   const fetchProjects = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/projects?userId=${userId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/projects?userId=${userId}`,
         {
           method: "GET",
           headers: {
@@ -36,7 +36,7 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
   const fetchFiles = async (projectId) => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/files?userId=${userId}&projectId=${projectId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/files?userId=${userId}&projectId=${projectId}`,
         {
           method: "GET",
           headers: {
@@ -65,7 +65,7 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
 
     try {
       const response = await fetch(
-        `http://localhost:4000/api/files/${fileId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/files/${fileId}`,
         {
           method: "DELETE",
           headers: {
@@ -80,7 +80,7 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
         if (deleteProject) {
           // Delete the project if no files remain
           const projectResponse = await fetch(
-            `http://localhost:4000/api/projects/${projectId}`,
+            `${process.env.REACT_APP_API_BASE_URL}/api/projects/${projectId}`,
             {
               method: "DELETE",
               headers: {

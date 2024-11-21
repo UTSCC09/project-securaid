@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Copy server files
 COPY ./server /app
-COPY ./server/.env /app  
 
 # Install dependencies
 RUN npm install
@@ -20,5 +19,8 @@ COPY --from=build /app /app
 # Expose the port the server runs on
 EXPOSE 4000
 
+# Use production variables dynamically at runtime
+ENV NODE_ENV=production
+
 # Start the server in production mode
-CMD ["npm", "run", "prod"]
+CMD ["npm", "run", "start"]

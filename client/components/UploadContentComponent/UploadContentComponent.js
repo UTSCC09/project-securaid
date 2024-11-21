@@ -133,7 +133,7 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
 
       // Save project and file metadata to the backend
       const projectResponse = await fetch(
-        "http://localhost:4000/api/projects",
+        "${process.env.REACT_APP_API_BASE_URL}/api/projects",
         {
           method: "POST",
           headers: {

@@ -10,12 +10,21 @@ const MongoStore = require("connect-mongo");
 const app = express();
 const PORT = 4000;
 
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? process.env.PROD_FRONTEND_URL
+    : process.env.FRONTEND_URL;
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: allowedOrigins,
     credentials: true,
   })
 );
+
+console.log(`Environment: ${process.env.NODE_ENV}`);
+console.log(`CORS Origin: ${allowedOrigins}`);
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -29,7 +38,7 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === "production", // True for HTTPS
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
@@ -228,20 +237,16 @@ async function connectToDatabase() {
         console.log("Remaining files:", remainingFiles);
 
         if (remainingFiles.length === 0) {
-          return res
-            .status(200)
-            .json({
-              message: "File deleted. Project is now empty.",
-              deleteProject: true,
-            });
+          return res.status(200).json({
+            message: "File deleted. Project is now empty.",
+            deleteProject: true,
+          });
         }
 
-        res
-          .status(200)
-          .json({
-            message: "File deleted successfully.",
-            deleteProject: false,
-          });
+        res.status(200).json({
+          message: "File deleted successfully.",
+          deleteProject: false,
+        });
       } catch (error) {
         console.error("Error deleting file:", error);
         res
@@ -266,11 +271,9 @@ async function connectToDatabase() {
         // Delete the project
         await projectCollection.deleteOne({ _id: new ObjectId(projectId) });
 
-        res
-          .status(200)
-          .json({
-            message: "Project and associated files deleted successfully.",
-          });
+        res.status(200).json({
+          message: "Project and associated files deleted successfully.",
+        });
       } catch (error) {
         console.error("Error deleting project:", error);
         res
