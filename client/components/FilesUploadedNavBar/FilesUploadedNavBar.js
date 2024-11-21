@@ -2,23 +2,24 @@ import { useEffect, useState } from "react";
 import "./FilesUploadedNavBar.css";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-
 export function FilesUploadedNavBar({ userId, refreshTrigger }) {
   const [projects, setProjects] = useState([]);
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
   const [hoveredFile, setHoveredFile] = useState(null);
 
-
   // Fetch projects from the backend
   const fetchProjects = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/projects?userId=${userId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `http://localhost:4000/api/projects?userId=${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -36,12 +37,15 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
     console.log("Deleting file with ID:", fileId);
 
     try {
-      const response = await fetch(`http://localhost:4000/api/files/${fileId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `http://localhost:4000/api/files/${fileId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const { deleteProject } = await response.json();
@@ -76,7 +80,6 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
       alert("An error occurred during file deletion.");
     }
   };
-
 
   // Fetch files for a specific project
   const fetchFiles = async (projectId) => {
@@ -152,33 +155,36 @@ export function FilesUploadedNavBar({ userId, refreshTrigger }) {
                   }`}
                 >
                   {isExpanded &&
-                    (filesByProject[project._id] && filesByProject[project._id].length > 0 ? (
+                    (filesByProject[project._id] &&
+                    filesByProject[project._id].length > 0 ? (
                       filesByProject[project._id].map((file) => (
                         <div
-                        className="file-item-element"
-                        key={file._id}
-                        onMouseEnter={() => setHoveredFile(file._id)}
-                        onMouseLeave={() => setHoveredFile(null)}
-                      >
-                        <a
-                          href={file.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="file-link"
+                          className="file-item-element"
+                          key={file._id}
+                          onMouseEnter={() => setHoveredFile(file._id)}
+                          onMouseLeave={() => setHoveredFile(null)}
                         >
-                          {file.filename.split("_").slice(1).join("_") || file.filename}
-                        </a>
-                        {hoveredFile === file._id && (
-                         <button
-                         className="delete-file-button"
-                         onClick={() => handleFileDelete(file._id, project._id)}
-                         aria-label="Delete File"
-                       >
-                         <RiDeleteBin6Line size={24} color="white" />
-
-                       </button>
-                        )}
-                      </div>
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="file-link"
+                          >
+                            {file.filename.split("_").slice(1).join("_") ||
+                              file.filename}
+                          </a>
+                          {hoveredFile === file._id && (
+                            <button
+                              className="delete-file-button"
+                              onClick={() =>
+                                handleFileDelete(file._id, project._id)
+                              }
+                              aria-label="Delete File"
+                            >
+                              <RiDeleteBin6Line size={24} color="white" />
+                            </button>
+                          )}
+                        </div>
                       ))
                     ) : (
                       <div className="no-files">No files found.</div>

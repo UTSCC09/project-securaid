@@ -5,7 +5,6 @@ import FormData from "form-data";
 const s3Client = new S3Client({ region: process.env.AWS_REGION });
 const virusTotalApiKey = process.env.VIRUSTOTAL_API_KEY;
 
-// Named export for the POST method
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -46,14 +45,13 @@ export async function POST(req) {
   }
 }
 
-// Helper function to download file from S3 and send it to VirusTotal
 async function scanFileFromS3(s3Url) {
   try {
     console.log("Downloading file from S3 URL:", s3Url);
 
     const command = new GetObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: new URL(s3Url).pathname.substring(1), // Extract S3 key from URL
+      Key: decodeURIComponent(new URL(s3Url).pathname.substring(1)), // Correct decoding
     });
 
     const { Body } = await s3Client.send(command);
@@ -64,8 +62,19 @@ async function scanFileFromS3(s3Url) {
 
     console.log("File successfully downloaded from S3.");
 
+    // Convert S3 stream to buffer
+    const streamToBuffer = async (stream) => {
+      const chunks = [];
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+      return Buffer.concat(chunks);
+    };
+
+    const fileBuffer = await streamToBuffer(Body);
+
     const formData = new FormData();
-    formData.append("file", Body, "file_from_s3");
+    formData.append("file", fileBuffer, "file_from_s3");
 
     const response = await fetch("https://www.virustotal.com/api/v3/files", {
       method: "POST",

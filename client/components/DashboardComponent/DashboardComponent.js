@@ -1,24 +1,24 @@
 import "./DashboardComponent.css";
-export function DashboardComponent({userId}) {
+
+export function DashboardComponent({ scanResults }) {
   return (
     <div className="dashboard_container">
       <div className="title">Dashboard</div>
       <div className="content">
-        <div className="score_container">
-            <div className="billboard">
-                <div className="subtitle">Score</div>
+        {scanResults && scanResults.length > 0 ? (
+          scanResults.map((result, index) => (
+            <div key={index} className="scan-result">
+              <div>
+                <strong>Filename:</strong> {result.filename}
+              </div>
+              <div>
+                <strong>Scan ID:</strong> {result.scanId}
+              </div>
             </div>
-            <div className="billboard">
-                <div className="subtitle">Project Progress</div>
-            </div>
-            <div className="billboard">
-                <div className="subtitle">Type Of Vulnerabilities
-                </div>
-            </div>
-            <div className="billboard">
-                <div className="subtitle">Vulnerabilities</div>
-            </div>
-        </div>
+          ))
+        ) : (
+          <div>No scan results available.</div>
+        )}
       </div>
     </div>
   );
