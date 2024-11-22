@@ -7,31 +7,21 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
-const envFile =
-  process.env.NODE_ENV === "production"
-    ? ".env.production"
-    : ".env.development";
+const envFile = ".env.local";
 dotenv.config({ path: envFile });
 
 const app = express();
 const PORT = 4000;
 
-// Allow CORS based on environment
-const allowedOrigins =
-  process.env.NODE_ENV === "production"
-    ? process.env.FRONTEND_URL
-    : process.env.FRONTEND_URL;
-console.log("NODE_ENV:", process.env.NODE_ENV);
 console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL, // Ensure FRONTEND_URL is correctly set in .env.production
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
 
-// Middleware setup
 app.use(express.json());
 app.use(cookieParser());
 app.use(
