@@ -13,11 +13,10 @@ RUN npm install
 # Copy all other frontend files from the client directory
 COPY client .
 
-# Load environment variables for production during the build
-ENV NODE_ENV=production
-ENV NEXT_PUBLIC_API_URL=http://34.130.102.184
-
 # Build the Next.js application
+ENV NEXT_PUBLIC_ESLINT_DISABLE=true
+ENV NEXT_LINT=false
+ENV NEXT_PUBLIC_API_URL=http://34.130.102.184:4000
 RUN npm run build
 
 # Serve the application
@@ -25,6 +24,5 @@ FROM node:18-alpine AS main
 WORKDIR /app
 COPY --from=build /app /app
 
-# Expose the frontend port
 EXPOSE 3000
 CMD ["npm", "run", "start"]

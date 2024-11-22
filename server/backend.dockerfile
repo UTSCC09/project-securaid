@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy server files
 COPY ./server /app
+COPY ./server/.env /app  
 
 # Install dependencies
 RUN npm install
@@ -15,12 +16,10 @@ FROM --platform=linux/amd64 node:lts-slim as main
 
 WORKDIR /app
 COPY --from=build /app /app
+ENV FRONTEND_URL=http://34.130.102.184:3000
 
 # Expose the port the server runs on
 EXPOSE 4000
 
-# Use production variables dynamically at runtime
-ENV NODE_ENV=production
-
 # Start the server in production mode
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "prod"]
