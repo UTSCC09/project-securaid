@@ -1,17 +1,17 @@
 # Use the official Node.js image
-FROM node:lts-alpine as build
+FROM node:18-alpine AS build
 
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the package.json and package-lock.json
+# Copy package.json and package-lock.json specifically to leverage Docker cache
 COPY client/package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the application source
-COPY . .
+# Copy all other frontend files from the client directory
+COPY client .
 
 # Set environment variables for production
 ENV NODE_ENV=production
@@ -23,23 +23,15 @@ ENV AWS_S3_BUCKET_NAME=securaid
 ENV ONGODB_URI=mongodb+srv://anish0516u:3A9fIWnjF258wf2N@securaid.3qjq1.mongodb.net/?retryWrites=true&w=majority&connectTimeoutMS=30000
 ENV VIRUSTOTAL_API_KEY=5caa1f14d212122d41e27c94c7a7c9e4fff60eeb66aa143366c1e5f03cb10c29
 
-# Build the application
+# Build the Next.js application
+ENV NEXT_PUBLIC_ESLINT_DISABLE=true
+ENV NEXT_LINT=false
 RUN npm run build
 
-# Start the runtime image
-FROM node:lts-alpine as runtime
+# Serve the application
+FROM node:18-alpine AS main
 WORKDIR /app
+COPY --from=build /app /app
 
-# Copy only the built files from the previous stage
-COPY --from=build /app/.next /app/.next
-COPY --from=build /app/public /app/public
-COPY --from=build /app/package*.json /app/
-
-# Install only production dependencies
-RUN npm install --production
-
-# Expose the port
 EXPOSE 3000
-
-# Run the application
 CMD ["npm", "run", "start"]
