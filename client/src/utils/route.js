@@ -8,7 +8,7 @@ function handleReponse(res) {
 }
 
 export function handleSignin(username, password, fail, success) {
-  fetch("http://localhost:4000/api/users/login", {
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
@@ -20,7 +20,7 @@ export function handleSignin(username, password, fail, success) {
 }
 
 export function handleSignup(username, password, fail, success) {
-  fetch("http://localhost:4000/api/users", {
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
@@ -34,7 +34,7 @@ export function handleSignup(username, password, fail, success) {
 }
 
 export function handleSignout(success) {
-  fetch("http://localhost:4000/api/logout", {
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/logout`, {
     method: "GET",
     credentials: "include",
   })
