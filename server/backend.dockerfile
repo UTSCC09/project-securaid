@@ -1,25 +1,25 @@
-# Stage 1: Build the server
-FROM --platform=linux/amd64 node:lts-slim as build
+# Use the official Node.js image
+FROM node:lts-alpine as build
 
-# Create app directory
+# Set the working directory
 WORKDIR /app
 
-# Copy server files
-COPY ./server /app
-COPY ./server/.env /app  
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Stage 2: Run the server
-FROM --platform=linux/amd64 node:lts-slim as main
+# Copy the application source
+COPY . .
 
-WORKDIR /app
-COPY --from=build /app /app
+# Set environment variables for production
+ENV NODE_ENV=production
 ENV FRONTEND_URL=http://34.130.102.184:3000
+ENV MONGODB_URI=mongodb+srv://anish0516u:3A9fIWnjF258wf2N@securaid.3qjq1.mongodb.net/?retryWrites=true&w=majority&connectTimeoutMS=30000
 
-# Expose the port the server runs on
+# Expose the port
 EXPOSE 4000
 
-# Start the server in production mode
+# Run the application
 CMD ["npm", "run", "prod"]

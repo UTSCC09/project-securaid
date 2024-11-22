@@ -7,17 +7,19 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
-const envFile = ".env.local";
+const envFile =
+  process.env.NODE_ENV === "production" ? ".env.production" : ".env.local";
 dotenv.config({ path: envFile });
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
+console.log("Running in environment:", process.env.NODE_ENV);
 console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.FRONTEND_URL || "*", // Use the provided FRONTEND_URL in production
     credentials: true,
   })
 );
