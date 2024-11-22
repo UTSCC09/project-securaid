@@ -5,6 +5,7 @@
     border-radius: 25px;
     background-color: #171717;
     padding: 25px;
+    height: fit-content;
 }
 
 @media (max-width: 500px) {

@@ -6,7 +6,7 @@ import "./ContentComponent.css";
 
 export function ContentComponent({ userId }) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [scanResults, setScanResults] = useState(null); // Store current scan results
+  const [scanResults, setScanResults] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleUploadSuccess = ({
@@ -14,12 +14,12 @@ export function ContentComponent({ userId }) {
     scanResults: newResults,
   }) => {
     setUploadedFiles((prev) => [...prev, ...newFiles]);
-    setScanResults(null); // Reset scan results to focus on new uploads
+    setScanResults(null);
     setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleViewResults = (results) => {
-    setScanResults(results); // Update the scan results for the dashboard
+    setScanResults(results);
   };
 
   return (

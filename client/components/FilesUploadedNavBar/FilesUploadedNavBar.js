@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import "./FilesUploadedNavBar.css";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { HiOutlineDocumentReport } from "react-icons/hi";
 
 export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
   const [projects, setProjects] = useState([]);
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
-  const [hoveredFile, setHoveredFile] = useState(null);
 
   // Fetch projects from the backend
   const fetchProjects = async () => {
@@ -158,36 +158,28 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
                 </button>
                 {isExpanded &&
                   (filesByProject[project._id] || []).map((file) => (
-                    <div
-                      key={file._id}
-                      className="file-item-element"
-                      onMouseEnter={() => setHoveredFile(file._id)}
-                      onMouseLeave={() => setHoveredFile(null)}
-                    >
+                    <div key={file._id} className="file-item-element">
                       <a
                         href={file.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="file-link"
                       >
-                        {file.filename}
+                        {file.filename.split("_").slice(1).join("_") ||
+                          file.filename}{" "}
                       </a>
-                      <button
-                        className="view-results-button"
+                      <HiOutlineDocumentReport
+                        className="file-button"
+                        size={30}
+                        color="white"
                         onClick={() => handleViewResults(file.scanId)}
-                      >
-                        View Results
-                      </button>
-                      {hoveredFile === file._id && (
-                        <button
-                          className="delete-file-button"
-                          onClick={() =>
-                            handleFileDelete(file._id, project._id)
-                          }
-                        >
-                          <RiDeleteBin6Line size={24} color="white" />
-                        </button>
-                      )}
+                      />
+                      <RiDeleteBin6Line
+                        className="file-button"
+                        size={30}
+                        color="white"
+                        onClick={() => handleFileDelete(file._id, project._id)}
+                      />
                     </div>
                   ))}
               </div>
