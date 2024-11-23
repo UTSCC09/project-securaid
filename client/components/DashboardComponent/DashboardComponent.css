@@ -16,8 +16,14 @@
     padding: 10px 10px 10px 0px;
 }
 .billboard-title{
-    font-size: 20px;
-    font-weight: 500;
+    font-size: 25px;
+    font-style: var(--font_Helvetica);
+    justify-content: center;
+    align-items: center;
+}
+.scan_results{
+    display: flex;
+    flex-direction: column;
 }
 
 .content {
@@ -54,11 +60,22 @@
     width: fit-content;
 }
 
+.billboard-horizontal {
+    display: flex;
+    border-radius: 5px;
+    text-wrap: wrap;
+    padding: 5px 10px;
+    border: 2px solid var(--orange);
+    gap: 25px;
+    width: fit-content;
+}
 .billboard-link{
-padding: 10px;
+padding: 5px;
 border: 2px solid var(--orange);
+border-radius: 5px;
 transition: 0.3s ease-in-out;
 }
+
 .billboard-link:hover{
     border: 2px solid var(--font_colour);
     cursor: pointer;
@@ -77,7 +94,6 @@ transition: 0.3s ease-in-out;
 .analysis_info_container {
     display: inline-flex;
     flex-wrap: wrap;
-    height: 100%;
     gap: 10px;
     align-items: flex-start;
     justify-content: left;
@@ -86,6 +102,7 @@ transition: 0.3s ease-in-out;
 .stats-info{
     display: inline-flex;
     flex-wrap: wrap;
+    width: 100%;
     gap: 10px;
     align-items: flex-start;
     justify-content: left;
@@ -100,9 +117,60 @@ transition: 0.3s ease-in-out;
     border: 2px solid #171717;
 }
 
+.analysis_id{
+display: flex;
+flex-wrap: wrap;
+overflow-x: hidden;
+text-wrap: wrap;
+width: 100%;
+}
+
+.welcome-message{
+    font-size: 20px;
+    font-weight: bold;
+    width: 350px;
+    color: var(--font_colour);
+    padding: 10px 10px 10px 0px;
+}
+
 @media (max-width: 500px) {
+    .scan_results{
+        max-width: 300px;
+    }
+    .stats-info{
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: left;
+    }
+    .billboard {
+        max-width: 250px;
+        background-color: var(--orange);
+        border-radius: 5px;
+        padding: 5px 10px;
+        gap: 25px;
+        width: fit-content;
+    }
     .content {
+        border-radius: 15px;
+        padding: 5px 10px;
+        gap: 15px;
+    }
+    .analysis_info_container {
+        display: inline-flex;
+        flex-wrap: wrap;
+        max-width:100%;
+        gap: 10px;
+        align-items: flex-start;
+        justify-content: left;
+    }
+    .billboard-horizontal{
         display: flex;
+        max-width: 100%;
         flex-direction: column;
+        flex-wrap: wrap;
+        text-wrap: wrap;
+        gap: 10px;
     }
 }

@@ -4,6 +4,7 @@ import "./DashboardComponent.css";
 
 export function DashboardComponent({ scanResults }) {
   const [analysisInfo, setAnalysisInfo] = useState(null);
+  const [safetyScore, setSafetyScore] = useState(null);
 
   useEffect(() => {
     if (scanResults) {
@@ -22,32 +23,27 @@ export function DashboardComponent({ scanResults }) {
     const results = data.attributes.results;
     console.log("Analysis Data:", data);
     setAnalysisInfo(data);
-    // Display basic analysis information
-    console.log("Analysis ID:", data.id);
-    console.log("Analysis Type:", data.type);
-    console.log("Analysis Status:", data.attributes.status);
-    console.log("Self Link:", data.links.self);
-    console.log("Item Link:", data.links.item);
+    // Calculate the safety score using stats
+    const malicious = stats.malicious || 0;
+    const suspicious = stats.suspicious || 0;
+    const failure = stats.failure || 0;
+    const confirmedTimeout = stats["confirmed-timeout"] || 0; // Handle properties with hyphens
+    const timeout = stats.timeout || 0;
+    const harmless = stats.harmless || 0;
+    const undetected = stats.undetected || 0;
 
-    // Display stats
-    console.log("\n=== Statistics ===");
-    for (const [key, value] of Object.entries(stats)) {
-      console.log(`${key}: ${value}`);
-    }
+    const safetyScore =
+      10 * malicious +
+      5 * suspicious +
+      3 * failure +
+      2 * confirmedTimeout +
+      1 * timeout -
+      10 * harmless -
+      2 * undetected;
 
-    // Display engine-specific results
-    console.log("\n=== Engine Results ===");
-    for (const engine in results) {
-      const result = results[engine];
-      console.log(`Engine: ${engine}`);
-      console.log(`  Method: ${result.method}`);
-      console.log(`  Engine Name: ${result.engine_name}`);
-      console.log(`  Engine Version: ${result.engine_version}`);
-      console.log(`  Engine Update: ${result.engine_update}`);
-      console.log(`  Category: ${result.category}`);
-      console.log(`  Result: ${result.result}`);
-      console.log("--------------------------------");
-    }
+    // Set the calculated safety score
+    setSafetyScore(safetyScore);
+    console.log("Safety Score:", safetyScore);
   }
 
   return (
@@ -64,25 +60,120 @@ export function DashboardComponent({ scanResults }) {
                 animateOnLoad={true}
               />
               <div className="analysis_info_container">
-                <div className="billboard">
-                  <HyperText
-                    text={"ID: " + analysisInfo.id}
-                    duration={500}
-                    className="text-1xl font-semibold text-white"
-                    animateOnLoad={true}
-                  />
+                <div className="billboard-horizontal">
+                  <div className="billboard-title">ID</div>
+                  <h2 className="analysis_id">{analysisInfo.id}</h2>
                 </div>
-                <div className="billboard">
+                <div className="billboard-horizontal">
+                  <div className="billboard-title">Status</div>
                   <HyperText
-                    text={"Status: " + analysisInfo.attributes.status}
+                    text={analysisInfo.attributes.status}
                     duration={500}
                     className="text-1xl font-semibold text-white"
                     animateOnLoad={true}
                   />
                 </div>
                 <div className="billboard-link">
-                    <a href={analysisInfo.links.self}>Report Link</a>
+                  <a href={analysisInfo.links.self}>Report Link</a>
                 </div>
+              </div>
+            </div>
+            <div className="scan_results">
+              <HyperText
+                text={"Vulnerability"}
+                duration={50}
+                className="text-2xl font-semibold text-white"
+                animateOnLoad={true}
+              />
+              <div className="analysis_info_container">
+                {safetyScore > 0 && safetyScore < 10 && (
+                  <div
+                    className="billboard"
+                    style={{
+                      backgroundColor:
+                        safetyScore >= 20
+                          ? "darkred"
+                          : safetyScore >= 10
+                          ? "orange"
+                          : safetyScore > 0
+                          ? "yellow"
+                          : "green",
+                    }}
+                  >
+                    <HyperText
+                      text={"Relatively Safe"}
+                      duration={500}
+                      className="text-1xl font-semibold text-white"
+                      animateOnLoad={true}
+                    />
+                  </div>
+                )}
+                {safetyScore >= 10 && safetyScore < 20 && (
+                  <div
+                    className="billboard"
+                    style={{
+                      backgroundColor:
+                        safetyScore >= 20
+                          ? "darkred"
+                          : safetyScore >= 10
+                          ? "orange"
+                          : safetyScore > 0
+                          ? "yellow"
+                          : "green",
+                    }}
+                  >
+                    <HyperText
+                      text={"Not Safe"}
+                      duration={500}
+                      className="text-1xl font-semibold text-white"
+                      animateOnLoad={true}
+                    />
+                  </div>
+                )}
+                {safetyScore >= 20 && (
+                  <div
+                    className="billboard"
+                    style={{
+                      backgroundColor:
+                        safetyScore >= 20
+                          ? "darkred"
+                          : safetyScore >= 10
+                          ? "orange"
+                          : safetyScore > 0
+                          ? "yellow"
+                          : "green",
+                    }}
+                  >
+                    <HyperText
+                      text={"Malware Detected"}
+                      duration={500}
+                      className="text-1xl font-semibold text-white"
+                      animateOnLoad={true}
+                    />
+                  </div>
+                )}
+                {safetyScore <= 0 && (
+                  <div
+                    className="billboard"
+                    style={{
+                      backgroundColor:
+                        safetyScore >= 20
+                          ? "darkred"
+                          : safetyScore >= 10
+                          ? "orange"
+                          : safetyScore > 0
+                          ? "yellow"
+                          : "green",
+                    }}
+                  >
+                    <HyperText
+                      text={"Safe"}
+                      duration={500}
+                      className="text-1xl font-semibold text-white"
+                      animateOnLoad={true}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -97,10 +188,9 @@ export function DashboardComponent({ scanResults }) {
                 {analysisInfo &&
                   Object.entries(analysisInfo.attributes.stats).map(
                     ([key, value]) => (
-                      <div className="billboard">
+                      <div className="billboard" key={`stats-${key}`}>
                         <HyperText
-                          key={key}
-                          text={key + ": " + value}
+                          text={`${key}: ${value}`}
                           duration={500}
                           className="text-1xl font-semibold text-white"
                           animateOnLoad={true}
@@ -121,50 +211,32 @@ export function DashboardComponent({ scanResults }) {
                 {analysisInfo &&
                   Object.entries(analysisInfo.attributes.results).map(
                     ([engine, value]) => (
-                      <div className="billboard">
+                      <div className="billboard" key={`result-${engine}`}>
                         <HyperText
-                          key={engine}
                           text={engine}
                           duration={500}
                           className="text-2xl font-semibold text-white"
                           animateOnLoad={true}
                         />
                         <div className="engine_container">
-
-                        <div className="engine-info">Method: {value.method}</div>
-                        <div className="engine-info">Version: {value.engine_version}</div>
-                        <div className="engine-info">Category: {value.category}</div>
-                        {value.result && <div className="engine-info">Result: {value.result}</div>}
+                          <div className="engine-info">
+                            Method: {value.method}
+                          </div>
+                          <div className="engine-info">
+                            Version: {value.engine_version}
+                          </div>
+                          <div className="engine-info">
+                            Category: {value.category}
+                          </div>
+                          {value.result && (
+                            <div className="engine-info">
+                              Result: {value.result}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )
                   )}
-              </div>
-            </div>
-            <div className="scan_results">
-              <HyperText
-                text={`Vulnerability Score`}
-                duration={50}
-                className="text-2xl font-semibold text-white"
-                animateOnLoad={true}
-              />
-              <div className="analysis_info_container">
-                <div className="billboard">
-                  <HyperText
-                    text={"ID: " + analysisInfo.id}
-                    duration={500}
-                    className="text-1xl font-semibold text-white"
-                    animateOnLoad={true}
-                  />
-                </div>
-                <div className="billboard">
-                  <HyperText
-                    text={"Status: " + analysisInfo.attributes.status}
-                    duration={500}
-                    className="text-1xl font-semibold text-white"
-                    animateOnLoad={true}
-                  />
-                </div>
               </div>
             </div>
           </>

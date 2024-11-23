@@ -79,7 +79,7 @@ body {
 #signed-in-bar {
   display: flex;
   justify-content: space-between;
-  padding: 30px;
+  padding: 10px;
   border-radius: 15px;
 }
 .text-orange {
@@ -96,22 +96,46 @@ body {
 }
 
 #sign-out-button {
-  padding: 8px 12px;
+  padding: 10px 15px;
   font-size: 14px;
-  font-weight: normal;
   background-color: var(--orange);
-  border: none;
+  border: 1px solid transparent;
+  height: max-content;
   border-radius: 5px;
   cursor: pointer;
   color: white;
-  width: 100px;
+  width: max-content;
   transition: all 0.2s ease-in-out;
-  min-height: 40px;
-  max-height: 50px;
 }
 
 #sign-out-button:hover {
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: #171717;
   color: var(--orange);
   border: 1px solid var(--orange);
+}
+
+@media (max-width: 500px) {
+#sign-out-button{
+  padding: 3px 5px;
+font-size: 12px;
+width: fit-content;
+}
+
+  #signed-in-bar {
+    display: flex;
+    gap:25px;
+    padding: 30px;
+    max-width: 350px;
+    border-radius: 15px;
+  }
+  #welcome-message {
+    font-size: 25px;
+    color: var(--font_colour);
+    font-family: var(--font-Helvetica);
+    padding: 5px 10px;
+    border-radius: 8px;
+  }
+  .text-6xl{
+    font-size: 25px; /* Adjusted font size for mobile devices */
+  }
 }
