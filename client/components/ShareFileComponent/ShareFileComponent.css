@@ -1,0 +1,82 @@
+#add-project-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--font_colour);
+    transition: 0.3 ease-in-out;
+}
+
+#add-project-button:hover {
+    color: var(--orange);
+    transition: 0.3 ease-in-out;
+}
+
+#add-file-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--font_colour);
+    transition: 0.3 ease-in-out;
+}
+
+#add-file-button:hover {
+    color: var(--orange);
+    transition: 0.3 ease-in-out;
+}
+.file-item-element{
+    border-left: 2px solid var(--orange);
+}
+
+#share-project-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.selected-files{
+    display: flex;
+    flex-direction: column;
+flex-wrap: wrap;
+width: 100%;
+gap: 10px;
+}
+
+.retrieved-users{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 5px 10px;
+}
+.retrieved-user{
+    text-align: left;
+    text-wrap: wrap;
+    padding: 5px 5px 5px 5px;
+    border-bottom: 2px solid transparent;
+border-left: 2px solid var(--orange);
+    transition: 0.3s ease-in-out;
+}
+.retrieved-user:hover{
+    padding: 5px 5px 5px 15px;
+    cursor: pointer;
+    border-bottom: 2px solid var(--orange);
+    transition: 0.3s ease-in-out;
+}
+
+.selected-file-item{
+    display: flex;
+gap: 10px;
+align-items: center;
+}
+.selected-file{
+    text-wrap: wrap;
+    width: 100%;
+background-color: var(--orange);
+text-align: left;
+padding: 5px 10px;
+border-radius: 5px;
+}
+#share-button{
+background-color: green;
+padding: 5px 10px;
+border-radius: 5px;
+}

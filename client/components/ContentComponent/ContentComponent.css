@@ -7,6 +7,12 @@
     padding: 25px;
     height: fit-content;
 }
+#vertical-split{
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: max-content;
+}
 
 @media (max-width: 500px) {
     #content_container{

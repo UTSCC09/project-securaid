@@ -77,6 +77,33 @@ async function connectToDatabase() {
         res.status(500).json({ message: "Error inserting user" });
       }
     });
+    app.get("/api/search-users", async (req, res) => {
+      try {
+        const { query, exclude } = req.query;
+
+        if (!query) {
+          return res.status(400).json({ error: "Search query is required." });
+        }
+
+        let excludedUsers = [];
+        if (exclude) {
+          excludedUsers = JSON.parse(exclude); // Parse the excluded user IDs
+        }
+
+        const users = await usersCollection
+          .find({
+            username: { $regex: query, $options: "i" },
+            _id: { $nin: excludedUsers }, // Exclude users whose IDs are in the excluded list
+          })
+          .limit(10)
+          .toArray();
+
+        res.status(200).json({ users });
+      } catch (error) {
+        console.error("Error searching users:", error);
+        res.status(500).json({ error: "An error occurred while searching users." });
+      }
+    });
 
     // Route for user login
     app.post("/api/users/login", async (req, res) => {
