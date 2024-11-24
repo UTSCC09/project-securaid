@@ -87,12 +87,12 @@ export function ShareFileComponent({ userId }) {
     }
   };
 
-  const fetchUsers = async (searchQuery) => {
+  const fetchUsers = async (searchQuery = "") => {
     try {
-      const selectedUserIds = selectedUsers.map((user) => user._id); // Get IDs of already selected users
+      const selectedUsernames = selectedUsers.map((user) => user.username);
 
       const response = await fetch(
-        `http://localhost:4000/api/search-users?query=${searchQuery}&exclude=${JSON.stringify(selectedUserIds)}`,
+        `http://localhost:4000/api/search-users?query=${searchQuery}&exclude=${JSON.stringify(selectedUsernames)}`,
         {
           method: "GET",
           headers: {
@@ -100,19 +100,20 @@ export function ShareFileComponent({ userId }) {
           },
         }
       );
+
       if (response.ok) {
         const data = await response.json();
-
-        setUsers(data.users || []); // Update users state with the filtered users
+        setUsers(data.users || []); // Update the users list
       } else {
         alert("Failed to fetch users");
-        setUsers([]); // Clear the users list on failure
+        setUsers([]); // Clear users list on failure
       }
     } catch (error) {
       alert("Error fetching users");
-      setUsers([]); // Clear the users list on error
+      setUsers([]); // Clear users list on error
     }
   };
+
 
 
   return (
@@ -226,7 +227,7 @@ export function ShareFileComponent({ userId }) {
               id="upload-input_text"
               onChange={(e) => {
                 if(e.target.value === "") {
-                  setUsers([]); // Clear the users list on empty search query
+                  setUsers([]);
                   return;
                 }
                 else {
@@ -278,7 +279,7 @@ export function ShareFileComponent({ userId }) {
           <div></div>
         )}
       </div>
-      <button id="share-button">Share</button>
+      <button id="share-button" onClick={()=>{}}>Share</button>
     </div>
   );
 }

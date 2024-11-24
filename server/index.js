@@ -85,15 +85,15 @@ async function connectToDatabase() {
           return res.status(400).json({ error: "Search query is required." });
         }
 
-        let excludedUsers = [];
+        let excludedUsernames = [];
         if (exclude) {
-          excludedUsers = JSON.parse(exclude); // Parse the excluded user IDs
+          excludedUsernames = JSON.parse(exclude); // Parse the excluded usernames
         }
-
+        console.log("Excluded Usernames:", excludedUsernames);
         const users = await usersCollection
           .find({
-            username: { $regex: query, $options: "i" },
-            _id: { $nin: excludedUsers }, // Exclude users whose IDs are in the excluded list
+            username: { $regex: query, $options: "i" }, // Match usernames containing the query (case-insensitive)
+            username: { $nin: excludedUsernames }, // Exclude users with usernames in the excluded list
           })
           .limit(10)
           .toArray();
