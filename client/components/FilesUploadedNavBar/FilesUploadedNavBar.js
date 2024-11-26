@@ -3,7 +3,7 @@ import "./FilesUploadedNavBar.css";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 
-export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
+export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults, handleRefresh}) {
   const [projects, setProjects] = useState([]);
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
@@ -123,6 +123,7 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
     }
   };
 
+
   // Toggle project expansion with fetch if not already expanded
   const toggleProjectExpansion = (projectId) => {
     if (expandedProjects.includes(projectId)) {
@@ -133,6 +134,7 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
         fetchFiles(projectId);
       }
     }
+    fetchFiles(projectId);
   };
 
   useEffect(() => {
@@ -140,6 +142,7 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults }) {
       fetchProjects();
     }
   }, [userId, refreshTrigger]);
+
 
   return (
     <div className="files-uploaded-navbar">

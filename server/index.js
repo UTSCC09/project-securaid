@@ -49,34 +49,90 @@ async function connectToDatabase() {
     const filesCollection = database.collection("files");
     const projectCollection = database.collection("projects");
 
-    // Route to register a new user
-    app.post("/api/users", async (req, res) => {
+    app.post("/api/projects", async (req, res) => {
       try {
-        const { username, password } = req.body;
+        const { folderName, uploadedLinks, userId, ownership } = req.body;
 
-        const existingUser = await usersCollection.findOne({ username });
-        if (existingUser) {
-          return res.status(409).json({
-            message:
-              "Username already exists. Please choose a different username.",
+        if (
+          !folderName ||
+          !uploadedLinks ||
+          !Array.isArray(uploadedLinks) ||
+          uploadedLinks.length === 0 ||
+          !userId
+        ) {
+          return res.status(400).json({
+            error:
+              "Invalid input. Folder name, user ID, and file links are required.",
           });
         }
 
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        // Step 1: Check if a project with the same folderName and userId already exists
+        const existingProject = await projectCollection.findOne({
+          folderName,
+          userId,
+        });
 
-        const user = {
-          username,
-          password: hashedPassword,
-        };
+        let projectId;
 
-        const insertResult = await usersCollection.insertOne(user);
-        res.json({ message: "User inserted", userId: insertResult.insertedId });
+        if (existingProject) {
+          // Step 2: If project exists, use the existing projectId
+          projectId = existingProject._id;
+
+          // Step 3: Insert new files into the existing project
+          const fileDocuments = uploadedLinks.map((file) => ({
+            projectId,
+            userId,
+            filename: file.filename,
+            url: file.url,
+            scanId: file.scanId || null, // Include scanId
+            ownership,
+            createdAt: new Date(),
+          }));
+
+          await filesCollection.insertMany(fileDocuments);
+
+          res.status(200).json({
+            message: "Files added to existing project successfully",
+            projectId,
+          });
+        } else {
+          // Step 4: If project does not exist, create a new project
+          const project = {
+            folderName,
+            userId,
+            ownership,
+            createdAt: new Date(),
+          };
+
+          const insertResult = await projectCollection.insertOne(project);
+          projectId = insertResult.insertedId;
+
+          // Step 5: Add files to the newly created project
+          const fileDocuments = uploadedLinks.map((file) => ({
+            projectId,
+            userId,
+            filename: file.filename,
+            url: file.url,
+            scanId: file.scanId || null, // Include scanId
+            ownership,
+            createdAt: new Date(),
+          }));
+
+          await filesCollection.insertMany(fileDocuments);
+
+          res.status(201).json({
+            message: "Project and files created successfully",
+            projectId,
+          });
+        }
       } catch (error) {
-        console.error("Error inserting user:", error);
-        res.status(500).json({ message: "Error inserting user" });
+        console.error("Error creating project and saving file links:", error);
+        res
+          .status(500)
+          .json({ error: "An error occurred while creating the project." });
       }
     });
+
     app.get("/api/search-users", async (req, res) => {
       try {
         const { query, exclude } = req.query;
@@ -101,7 +157,9 @@ async function connectToDatabase() {
         res.status(200).json({ users });
       } catch (error) {
         console.error("Error searching users:", error);
-        res.status(500).json({ error: "An error occurred while searching users." });
+        res
+          .status(500)
+          .json({ error: "An error occurred while searching users." });
       }
     });
 
@@ -255,20 +313,16 @@ async function connectToDatabase() {
         console.log("Remaining files:", remainingFiles);
 
         if (remainingFiles.length === 0) {
-          return res
-            .status(200)
-            .json({
-              message: "File deleted. Project is now empty.",
-              deleteProject: true,
-            });
+          return res.status(200).json({
+            message: "File deleted. Project is now empty.",
+            deleteProject: true,
+          });
         }
 
-        res
-          .status(200)
-          .json({
-            message: "File deleted successfully.",
-            deleteProject: false,
-          });
+        res.status(200).json({
+          message: "File deleted successfully.",
+          deleteProject: false,
+        });
       } catch (error) {
         console.error("Error deleting file:", error);
         res
@@ -293,11 +347,9 @@ async function connectToDatabase() {
         // Delete the project
         await projectCollection.deleteOne({ _id: new ObjectId(projectId) });
 
-        res
-          .status(200)
-          .json({
-            message: "Project and associated files deleted successfully.",
-          });
+        res.status(200).json({
+          message: "Project and associated files deleted successfully.",
+        });
       } catch (error) {
         console.error("Error deleting project:", error);
         res

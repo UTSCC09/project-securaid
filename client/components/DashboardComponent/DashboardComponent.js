@@ -61,24 +61,17 @@ export function DashboardComponent({ scanResults }) {
               />
               <div className="analysis_info_container">
                 <div className="billboard-horizontal">
-                  <div className="billboard-title">ID</div>
-                  <h2 className="analysis_id">{analysisInfo.id}</h2>
+                  <div className="billboard-title">ID: {analysisInfo.id}</div>
                 </div>
                 <div className="billboard-horizontal">
-                  <div className="billboard-title">Status</div>
-                  <HyperText
-                    text={analysisInfo.attributes.status}
-                    duration={500}
-                    className="text-1xl font-semibold text-white"
-                    animateOnLoad={true}
-                  />
+                  <div className="billboard-title">Status: {analysisInfo.attributes.status}</div>
                 </div>
                 <div className="billboard-link">
                   <a href={analysisInfo.links.self}>Report Link</a>
                 </div>
               </div>
             </div>
-            <div className="scan_results">
+            {analysisInfo.attributes.status === "completed" && <div className="scan_results">
               <HyperText
                 text={"Vulnerability"}
                 duration={50}
@@ -175,9 +168,9 @@ export function DashboardComponent({ scanResults }) {
                   </div>
                 )}
               </div>
-            </div>
+            </div>}
 
-            <div className="scan_results">
+            {analysisInfo.attributes.status === "completed" && <div className="scan_results">
               <HyperText
                 text={`Statitics`}
                 duration={250}
@@ -199,8 +192,8 @@ export function DashboardComponent({ scanResults }) {
                     )
                   )}
               </div>
-            </div>
-            <div className="scan_results">
+            </div>}
+            {analysisInfo.attributes.status === "completed" && <div className="scan_results">
               <HyperText
                 text={`Engine Results`}
                 duration={250}
@@ -238,7 +231,7 @@ export function DashboardComponent({ scanResults }) {
                     )
                   )}
               </div>
-            </div>
+            </div>}
           </>
         )}
       </div>

@@ -237,7 +237,7 @@ export function ShareFileComponent({ userId }) {
             />
             <div className="retrieved-users">
               {users.map((user) => ( user.username !== userId &&
-                <div key={user._id} className="retrieved-user" onClick={()=>{
+                <div key={user._id} className="file-link" onClick={()=>{
                     setSelectedUsers((prev) => {
                         const isDuplicate = prev.some(
                         (selectedUser) => selectedUser._id === user._id
@@ -255,8 +255,8 @@ export function ShareFileComponent({ userId }) {
                 </div>
               ))}
               {selectedUsers.map((user, index) => (
-              <div className="selected-file-item" key={index}>
-                <div className="selected-file">
+              <div className="file-item-element" key={index}>
+                <div className="file-link">
                   {user.username}
                 </div>
                 <RiDeleteBin6Line

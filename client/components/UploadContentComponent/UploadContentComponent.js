@@ -4,11 +4,14 @@ import ExifReader from "exifreader"; // Import the ExifReader library
 import { useState } from "react";
 import "../UploadContentComponent/UploadContentComponent.css";
 
-export function UploadContentComponent({ userId, onUploadSuccess }) {
+export function UploadContentComponent({ userId, onUploadSuccess, refreshTrigger }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [uploadedLinks, setUploadedLinks] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+const [searchResults, setSearchResults] = useState([]);
+
 
   const checkImageMetadata = async (file) => {
     const arrayBuffer = await file.arrayBuffer();
@@ -49,6 +52,27 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
       return false;
     }
   };
+  const handleSearchChange = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Use the query as the folder name
+    setFolderName(query);
+
+    if (query.trim()) {
+      try {
+        const response = await fetch(`/api/search-projects?query=${query}`);
+        const data = await response.json();
+        setSearchResults(data.projects || []);
+      } catch (error) {
+        console.error("Error searching projects:", error);
+        setSearchResults([]);
+      }
+    } else {
+      setSearchResults([]);
+    }
+  };
+
 
   const scanWithVirusTotal = async (filePath) => {
     try {
@@ -76,10 +100,13 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
       return null;
     }
   };
-
+  const handleSelectSearchResult = (projectName) => {
+    setFolderName(projectName);
+    setSearchQuery(projectName); // Update the search query
+    setSearchResults([]); // Clear the search results
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!files.length || !folderName.trim()) {
       alert("Please select files and provide a folder name.");
       return;
@@ -149,6 +176,9 @@ export function UploadContentComponent({ userId, onUploadSuccess }) {
 
       if (!projectResponse.ok) {
         throw new Error("Failed to create project in the backend.");
+      }
+      else if(projectResponse.ok)
+        { setUploadedLinks(scanResults);
       }
 
       const { projectId } = await projectResponse.json();

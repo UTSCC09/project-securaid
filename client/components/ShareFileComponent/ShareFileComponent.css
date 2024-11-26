@@ -31,6 +31,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    width: 100%;
 }
 
 .selected-files{
@@ -64,9 +65,22 @@ border-left: 2px solid var(--orange);
 
 .selected-file-item{
     display: flex;
+    text-decoration: none;
 gap: 10px;
+width: 100%;
+overflow-x: hidden;
+text-wrap: wrap;
 align-items: center;
+padding: 2px;
+transition: 0.3s ease-in-out;
 }
+.selected-file-item:hover{
+    overflow-x: visible;
+    white-space: normal;
+    color: white;
+    transition: 0.3s ease-in-out;
+}
+
 .selected-file{
     text-wrap: wrap;
     width: 100%;
@@ -74,6 +88,12 @@ background-color: var(--orange);
 text-align: left;
 padding: 5px 10px;
 border-radius: 5px;
+max-width: 350px;
+overflow-x: hidden;
+}
+
+.selected-file:hover{
+overflow-x: visible;
 }
 #share-button{
 background-color: green;

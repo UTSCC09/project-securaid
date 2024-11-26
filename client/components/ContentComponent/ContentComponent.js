@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { FilesUploadedNavBar } from "../FilesUploadedNavBar/FilesUploadedNavBar";
-import { UploadContentComponent } from "../UploadContentComponent/UploadContentComponent";
 import { DashboardComponent } from "../DashboardComponent/DashboardComponent";
+import { FilesUploadedNavBar } from "../FilesUploadedNavBar/FilesUploadedNavBar";
 import { ShareFileComponent } from "../ShareFileComponent/ShareFileComponent";
+import { UploadContentComponent } from "../UploadContentComponent/UploadContentComponent";
 
 import "./ContentComponent.css";
 
@@ -15,6 +15,7 @@ export function ContentComponent({ userId }) {
     uploadedFiles: newFiles,
     scanResults: newResults,
   }) => {
+    console.log("_________-----New files uploaded----_________", newFiles);
     setUploadedFiles((prev) => [...prev, ...newFiles]);
     setScanResults(null);
     setRefreshTrigger((prev) => prev + 1);

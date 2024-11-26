@@ -122,6 +122,7 @@
 .file-link:hover {
     white-space: normal;
     background-color: #222;
+    cursor: pointer;
     overflow-x: visible;
     color: white;
     transition: 0.3s ease-in-out;
