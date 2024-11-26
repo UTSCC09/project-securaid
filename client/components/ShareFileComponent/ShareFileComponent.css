@@ -1,102 +1,217 @@
 #add-project-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--font_colour);
-    transition: 0.3 ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--font_colour);
+  transition: 0.3 ease-in-out;
 }
 
 #add-project-button:hover {
-    color: var(--orange);
-    transition: 0.3 ease-in-out;
+  color: var(--orange);
+  transition: 0.3 ease-in-out;
 }
 
 #add-file-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--font_colour);
-    transition: 0.3 ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--font_colour);
+  transition: 0.3 ease-in-out;
 }
 
 #add-file-button:hover {
-    color: var(--orange);
-    transition: 0.3 ease-in-out;
+  color: var(--orange);
+  transition: 0.3 ease-in-out;
 }
-.file-item-element{
-    border-left: 2px solid var(--orange);
+.file-item-element {
+  border-left: 2px solid var(--orange);
 }
 
 #share-project-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.selected-files{
-    display: flex;
-    flex-direction: column;
-flex-wrap: wrap;
-width: 100%;
-gap: 10px;
+.selected-files {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 10px;
 }
 
-.retrieved-users{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 5px 10px;
+.retrieved-users {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 5px 10px;
 }
-.retrieved-user{
-    text-align: left;
-    text-wrap: wrap;
-    padding: 5px 5px 5px 5px;
-    border-bottom: 2px solid transparent;
-border-left: 2px solid var(--orange);
-    transition: 0.3s ease-in-out;
+.retrieved-user {
+  text-align: left;
+  padding: 5px 5px 5px 5px;
+  border-bottom: 2px solid transparent;
+  border-left: 2px solid var(--orange);
+  transition: 0.3s ease-in-out;
 }
-.retrieved-user:hover{
-    padding: 5px 5px 5px 15px;
-    cursor: pointer;
-    border-bottom: 2px solid var(--orange);
-    transition: 0.3s ease-in-out;
-}
-
-.selected-file-item{
-    display: flex;
-    text-decoration: none;
-gap: 10px;
-width: 100%;
-overflow-x: hidden;
-text-wrap: wrap;
-align-items: center;
-padding: 2px;
-transition: 0.3s ease-in-out;
-}
-.selected-file-item:hover{
-    overflow-x: visible;
-    white-space: normal;
-    color: white;
-    transition: 0.3s ease-in-out;
+.retrieved-user:hover {
+  padding: 5px 5px 5px 15px;
+  cursor: pointer;
+  border-bottom: 2px solid var(--orange);
+  transition: 0.3s ease-in-out;
 }
 
-.selected-file{
-    text-wrap: wrap;
-    width: 100%;
-background-color: var(--orange);
-text-align: left;
-padding: 5px 10px;
-border-radius: 5px;
-max-width: 350px;
-overflow-x: hidden;
+.selected-file-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.selected-file {
+  width: 100%;
+  background-color: var(--orange);
+  text-align: left;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+#share-button {
+  background-color: #007bff;
+  padding: 5px 10px;
+  border-radius: 5px;
 }
 
-.selected-file:hover{
-overflow-x: visible;
+.share-file-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+  background-color: #171717;
+  border-radius: 8px;
 }
-#share-button{
-background-color: green;
-padding: 5px 10px;
-border-radius: 5px;
+
+.file-share-header {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+.expiration-input {
+  display: flex;
+  gap: 10px;
+  color: #171717;
+}
+
+.expiration-input label {
+  font-size: 14px;
+  color: white;
+}
+
+#share-button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#share-button:hover {
+  background-color: #0056b3;
+}
+
+.user-selection {
+  margin-top: 10px;
+}
+
+.user-list {
+  max-height: 150px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-item {
+  padding: 5px 10px;
+  background-color: #222;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.user-item:hover {
+  background-color: #444;
+}
+
+.selected-users {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.selected-user {
+  padding: 5px 10px;
+  background-color: #555;
+  color: white;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Wrapper for the expiration time input */
+.expiration-input {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Label styling for expiration inputs */
+.expiration-input label {
+  font-size: 14px;
+  color: white;
+}
+
+/* Input box styling for expiration inputs */
+.expiration-input input {
+  width: 80px; /* Increased width for better legibility */
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #292929;
+  color: white;
+  text-align: center; /* Center-align text for better readability */
+  font-size: 14px; /* Slightly increased font size */
+}
+
+/* Focus state for expiration inputs */
+.expiration-input input:focus {
+  border-color: var(--orange);
+  outline: none;
+}
+
+.user-list {
+  max-height: 200px; /* Set desired height */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #222;
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%; /* Use full width of container */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.user-item {
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.user-item:hover {
+  background-color: #444;
 }

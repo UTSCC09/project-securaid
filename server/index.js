@@ -48,122 +48,46 @@ async function connectToDatabase() {
     const usersCollection = database.collection("users");
     const filesCollection = database.collection("files");
     const projectCollection = database.collection("projects");
+    const sharedFilesCollection = database.collection("sharedFiles");
 
-    app.post("/api/projects", async (req, res) => {
+    app.post("/api/users", async (req, res) => {
       try {
-        const { folderName, uploadedLinks, userId, ownership } = req.body;
+        const { username, password } = req.body;
 
-        if (
-          !folderName ||
-          !uploadedLinks ||
-          !Array.isArray(uploadedLinks) ||
-          uploadedLinks.length === 0 ||
-          !userId
-        ) {
-          return res.status(400).json({
-            error:
-              "Invalid input. Folder name, user ID, and file links are required.",
+        const existingUser = await usersCollection.findOne({ username });
+        if (existingUser) {
+          return res.status(409).json({
+            message:
+              "Username already exists. Please choose a different username.",
           });
         }
 
-        // Step 1: Check if a project with the same folderName and userId already exists
-        const existingProject = await projectCollection.findOne({
-          folderName,
-          userId,
-        });
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        let projectId;
+        const user = {
+          username,
+          password: hashedPassword,
+        };
 
-        if (existingProject) {
-          // Step 2: If project exists, use the existing projectId
-          projectId = existingProject._id;
-
-          // Step 3: Insert new files into the existing project
-          const fileDocuments = uploadedLinks.map((file) => ({
-            projectId,
-            userId,
-            filename: file.filename,
-            url: file.url,
-            scanId: file.scanId || null, // Include scanId
-            ownership,
-            createdAt: new Date(),
-          }));
-
-          await filesCollection.insertMany(fileDocuments);
-
-          res.status(200).json({
-            message: "Files added to existing project successfully",
-            projectId,
-          });
-        } else {
-          // Step 4: If project does not exist, create a new project
-          const project = {
-            folderName,
-            userId,
-            ownership,
-            createdAt: new Date(),
-          };
-
-          const insertResult = await projectCollection.insertOne(project);
-          projectId = insertResult.insertedId;
-
-          // Step 5: Add files to the newly created project
-          const fileDocuments = uploadedLinks.map((file) => ({
-            projectId,
-            userId,
-            filename: file.filename,
-            url: file.url,
-            scanId: file.scanId || null, // Include scanId
-            ownership,
-            createdAt: new Date(),
-          }));
-
-          await filesCollection.insertMany(fileDocuments);
-
-          res.status(201).json({
-            message: "Project and files created successfully",
-            projectId,
-          });
-        }
+        const insertResult = await usersCollection.insertOne(user);
+        res.json({ message: "User inserted", userId: insertResult.insertedId });
       } catch (error) {
-        console.error("Error creating project and saving file links:", error);
-        res
-          .status(500)
-          .json({ error: "An error occurred while creating the project." });
+        console.error("Error inserting user:", error);
+        res.status(500).json({ message: "Error inserting user" });
       }
     });
 
-    app.get("/api/search-users", async (req, res) => {
+    app.get("/api/all-users", async (req, res) => {
       try {
-        const { query, exclude } = req.query;
-
-        if (!query) {
-          return res.status(400).json({ error: "Search query is required." });
-        }
-
-        let excludedUsernames = [];
-        if (exclude) {
-          excludedUsernames = JSON.parse(exclude); // Parse the excluded usernames
-        }
-        console.log("Excluded Usernames:", excludedUsernames);
-        const users = await usersCollection
-          .find({
-            username: { $regex: query, $options: "i" }, // Match usernames containing the query (case-insensitive)
-            username: { $nin: excludedUsernames }, // Exclude users with usernames in the excluded list
-          })
-          .limit(10)
-          .toArray();
-
+        const users = await usersCollection.find({}).toArray();
         res.status(200).json({ users });
       } catch (error) {
-        console.error("Error searching users:", error);
-        res
-          .status(500)
-          .json({ error: "An error occurred while searching users." });
+        console.error("Error fetching all users:", error);
+        res.status(500).json({ error: "Failed to fetch users." });
       }
     });
 
-    // Route for user login
     app.post("/api/users/login", async (req, res) => {
       try {
         const { username, password } = req.body;
@@ -284,6 +208,7 @@ async function connectToDatabase() {
         res.status(500).json({ message: "Internal server error." });
       }
     });
+
     app.delete("/api/files/:fileId", async (req, res) => {
       try {
         const { fileId } = req.params;
@@ -392,6 +317,55 @@ async function connectToDatabase() {
         res.clearCookie("connect.sid");
         res.status(200).json({ message: "Logged out successfully" });
       });
+    });
+
+    app.post("/api/share-file", async (req, res) => {
+      try {
+        const { sharedTo, sharedBy, fileName, expiryTime } = req.body;
+
+        // Validate input
+        if (!sharedTo || !sharedBy || !fileName || !expiryTime) {
+          return res.status(400).json({ error: "All fields are required." });
+        }
+
+        // Create the shared file document
+        const sharedFile = {
+          sharedTo, // Username of the recipient
+          sharedBy, // Username of the sharer
+          fileName,
+          expiryTime,
+          createdAt: new Date(),
+        };
+
+        await sharedFilesCollection.insertOne(sharedFile);
+
+        res.status(201).json({ message: "File shared successfully." });
+      } catch (error) {
+        console.error("Error sharing file:", error);
+        res.status(500).json({ error: "Failed to share the file." });
+      }
+    });
+
+    app.get("/api/shared-files", async (req, res) => {
+      try {
+        const { username } = req.query;
+        console.log("Shared files endpoint hit with username:", username); // Debug log
+
+        if (!username) {
+          console.error("No username provided");
+          return res.status(400).json({ error: "Username is required." });
+        }
+
+        const sharedFiles = await sharedFilesCollection
+          .find({ sharedTo: username })
+          .toArray();
+        console.log("Shared files fetched:", sharedFiles); // Debug log
+
+        res.status(200).json({ sharedFiles });
+      } catch (error) {
+        console.error("Error in shared files endpoint:", error); // Debug log
+        res.status(500).json({ error: "Failed to fetch shared files." });
+      }
     });
 
     app.listen(PORT, () => {
