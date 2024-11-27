@@ -15,6 +15,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex: 1;
   color: var(--font_colour);
   transition: 0.3 ease-in-out;
 }
@@ -36,7 +37,6 @@
 .selected-files {
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
   width: 100%;
   gap: 10px;
 }
@@ -64,14 +64,18 @@
 .selected-file-item {
   display: flex;
   gap: 10px;
+  width: 300px;
+  overflow-x: hidden;
   align-items: center;
+  overflow-x: hidden;
+  border-left: 2px solid var(--orange);
 }
 .selected-file {
-  width: 100%;
-  background-color: var(--orange);
+  max-width: 250px;
+  overflow-x: hidden;
   text-align: left;
   padding: 5px 10px;
-  border-radius: 5px;
+  transition: 0.3 ease-in-out;
 }
 #share-button {
   background-color: #007bff;
@@ -146,6 +150,7 @@
   margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
 }
 
@@ -181,18 +186,17 @@
   border: 1px solid #ccc;
   background-color: #292929;
   color: white;
-  text-align: center; /* Center-align text for better readability */
-  font-size: 14px; /* Slightly increased font size */
+  text-align: center;
+  font-size: 14px;
 }
 
-/* Focus state for expiration inputs */
 .expiration-input input:focus {
   border-color: var(--orange);
   outline: none;
 }
 
 .user-list {
-  max-height: 200px; /* Set desired height */
+  max-height: 200px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -200,8 +204,20 @@
   background-color: #222;
   padding: 10px;
   border-radius: 5px;
-  width: 100%; /* Use full width of container */
-  box-sizing: border-box; /* Include padding in width calculation */
+  width: 100%;
+  box-sizing: border-box;
+}
+.user-list::-webkit-scrollbar {
+  display: none;
+}
+
+.limit-parameters{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  font-size: 45px;
+  font-weight: bold;
 }
 
 .user-item {
@@ -210,8 +226,10 @@
   color: white;
   border-radius: 5px;
   cursor: pointer;
+  transition: 0.2s ease-in-out;
 }
 
 .user-item:hover {
   background-color: #444;
+  transition: 0.2s ease-in-out;
 }

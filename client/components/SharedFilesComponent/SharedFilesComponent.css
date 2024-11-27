@@ -58,10 +58,15 @@
   cursor: pointer;
   font-size: 14px;
   margin-top: 5px;
+  cursor: pointer;
+  transition: 0.1s ease-in-out;
 }
 
 .view-button:hover {
-  background-color: #0056b3;
+  background-color: #171717;
+  color:#007bff;
+  cursor: pointer;
+  transition: 0.1s ease-in-out;
 }
 
 .shared-file-item {

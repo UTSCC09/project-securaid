@@ -102,40 +102,24 @@ export function SharedFilesComponent({ username }) {
 
   return (
     <div className="shared-files-wrapper">
-      <h2 className="shared-files-header">Files Shared with You</h2>
+      <h2 className="files-uploaded-navbar-title">Shared with You</h2>
       <ul className="shared-files-list">
-        {sharedFiles.map((file, index) => {
-          const expiresAt = calculateExpiryAt(file.createdAt, file.expiryTime);
-          return (
-            <li
-              key={`${file.fileName}_${file.sharedBy}_${index}`}
-              className="shared-file-item"
-            >
-              <div className="file-details">
-                <div>File Name: {file.fileName}</div>
-                <div>Shared By: {file.sharedBy}</div>
-                <div>Expires At: {formatTime(expiresAt)}</div>
-              </div>
-              <div className="file-actions">
-                {isExpired(expiresAt) ? (
-                  <button className="expired-button" disabled>
-                    Expired
-                  </button>
-                ) : (
-                  <button className="view-button" onClick={() => {}}>
-                    View
-                  </button>
-                )}
-                <button
-                  className="delete-button"
-                  onClick={() => handleDelete(file._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          );
-        })}
+        {sharedFiles.map((file, index) => (
+          <li
+            key={`${file.fileName}_${file.sharedBy}_${index}`}
+            className="shared-file-item"
+          >
+            <div>{file.fileName.split("_").slice(1).join("_") ||
+                          file.fileName}{" "}</div>
+            <div>Author: {file.sharedBy}</div>
+            <div>
+              Expires On: {calculateExpiryAt(file.createdAt, file.expiryTime)}
+            </div>
+            <button className="view-button" onClick={() => {}}>
+              View
+            </button>
+          </li>
+        ))}
       </ul>
     </div>
   );
