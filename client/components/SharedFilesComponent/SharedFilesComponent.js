@@ -4,6 +4,7 @@ import "./SharedFilesComponent.css";
 export function SharedFilesComponent({ username }) {
   const [sharedFiles, setSharedFiles] = useState([]);
   const [error, setError] = useState(null);
+  const [fileToView, setFileToView] = useState(null); // State to store file URL for viewing
 
   const formatTime = (date) => {
     return date.toLocaleString("en-US", {
@@ -24,7 +25,6 @@ export function SharedFilesComponent({ username }) {
 
   const fetchSharedFiles = async () => {
     if (!username) {
-      console.error("Username is missing."); // Log the issue
       setError("Username is required to fetch shared files.");
       return;
     }
@@ -78,10 +78,17 @@ export function SharedFilesComponent({ username }) {
     }
   };
 
+  const handleView = (fileUrl) => {
+    setFileToView(fileUrl); // Set the file URL to view
+  };
+
+  const closeViewer = () => {
+    setFileToView(null); // Close the viewer
+  };
+
   useEffect(() => {
     fetchSharedFiles();
 
-    // Set up interval to refresh data every 30 seconds
     const intervalId = setInterval(() => {
       fetchSharedFiles();
     }, 30000);
@@ -96,6 +103,12 @@ export function SharedFilesComponent({ username }) {
   if (sharedFiles.length === 0) {
     return <div className="no-shared-files">No shared files.</div>;
   }
+
+  const isImage = (file) => {
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
+    const extension = file.split(".").pop().toLowerCase();
+    return imageExtensions.includes(extension);
+  };
 
   return (
     <div className="shared-files-wrapper">
@@ -119,7 +132,10 @@ export function SharedFilesComponent({ username }) {
                     Expired
                   </button>
                 ) : (
-                  <button className="view-button" onClick={() => {}}>
+                  <button
+                    className="view-button"
+                    onClick={() => handleView(file.fileUrl)}
+                  >
                     View
                   </button>
                 )}
@@ -134,6 +150,31 @@ export function SharedFilesComponent({ username }) {
           );
         })}
       </ul>
+
+      {fileToView && (
+        <div className="file-viewer-modal">
+          <div className="file-viewer-content">
+            {isImage(fileToView) ? (
+              <img
+                src={fileToView}
+                alt="Uploaded file"
+                className="file-viewer-image"
+              />
+            ) : (
+              <iframe
+                src={fileToView}
+                className="file-viewer-frame"
+                title="File Viewer"
+              ></iframe>
+            )}
+            <div className="close-button-container">
+              <button className="close-button" onClick={closeViewer}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
