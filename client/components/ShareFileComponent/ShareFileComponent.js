@@ -210,7 +210,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
                   (filesByProject[project._id] || []).map((file) => (
                     <div key={file._id} className="file-item-element">
                       <div id="share-project-item">
-                        <div className="file-link">
+                        <div className="selected-file">
                           {file.filename.split("_").slice(1).join("_") ||
                             file.filename}
                         </div>
@@ -241,7 +241,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
           <div className="selected-files">
             <div className="files-uploaded-navbar-title">Selected Files</div>
             {selectedFiles.map((file, index) => (
-              <div className="selected-file-item" key={index}>
+              <div className="file-item-element" key={index}>
                 <div className="selected-file">
                   {file.filename.split("_").slice(1).join("_") || file.filename}
                 </div>
@@ -307,7 +307,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
         )}
       </div>
       <div className="expiration-input">
-        <label>
+        <label className="limit-parameters">
           Expiry Time (Hours):
           <input
             type="number"
@@ -317,7 +317,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
             onChange={(e) => setExpiryHours(e.target.value)}
           />
         </label>
-        <label>
+        <label className="limit-parameters">
           Expiry Time (Minutes):
           <input
             type="number"

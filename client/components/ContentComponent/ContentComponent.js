@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FilesUploadedNavBar } from "../FilesUploadedNavBar/FilesUploadedNavBar";
-import { UploadContentComponent } from "../UploadContentComponent/UploadContentComponent";
 import { DashboardComponent } from "../DashboardComponent/DashboardComponent";
+import { FilesUploadedNavBar } from "../FilesUploadedNavBar/FilesUploadedNavBar";
 import { ShareFileComponent } from "../ShareFileComponent/ShareFileComponent";
 import { SharedFilesComponent } from "../SharedFilesComponent/SharedFilesComponent";
+import { UploadContentComponent } from "../UploadContentComponent/UploadContentComponent";
 
 import "./ContentComponent.css";
 
@@ -37,15 +37,16 @@ export function ContentComponent({ username }) {
             userId={username}
             refreshTrigger={refreshTrigger}
             onViewResults={handleViewResults}
+
           />
           <ShareFileComponent
             userId={username}
             refreshTrigger={refreshTrigger}
           />
-          <SharedFilesComponent username={username} />
         </div>
         <DashboardComponent scanResults={scanResults} />
       </div>
+
     </>
   );
 }

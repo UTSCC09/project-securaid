@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./FilesUploadedNavBar.css";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { HiOutlineDocumentReport } from "react-icons/hi";
+import { SharedFilesComponent } from "../SharedFilesComponent/SharedFilesComponent";
 
 export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults, handleRefresh}) {
   const [projects, setProjects] = useState([]);
@@ -192,6 +193,8 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults, han
           <div>No projects found.</div>
         )}
       </div>
+      <SharedFilesComponent username={userId} />
+
     </div>
   );
 }
