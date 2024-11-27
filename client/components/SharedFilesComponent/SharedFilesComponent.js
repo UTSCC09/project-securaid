@@ -3,6 +3,7 @@ import "./SharedFilesComponent.css";
 import { useSnackbar } from "notistack";
 
 export function SharedFilesComponent({ username }) {
+  const { enqueueSnackbar } = useSnackbar();
   const [sharedFiles, setSharedFiles] = useState([]);
   const [error, setError] = useState(null);
   const [fileToView, setFileToView] = useState(null);
