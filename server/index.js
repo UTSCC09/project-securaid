@@ -282,6 +282,16 @@ async function connectToDatabase() {
           .json({ error: "An error occurred while deleting the project." });
       }
     });
+    app.delete("/api/delete-shared-file/:fileId", async (req, res) => {
+      try {
+        const { fileId } = req.params;
+        await sharedFilesCollection.deleteOne({ _id: new ObjectId(fileId) });
+        res.status(200).json({ message: "File deleted successfully." });
+      } catch (error) {
+        console.error("Error deleting shared file:", error);
+        res.status(500).json({ error: "Failed to delete shared file." });
+      }
+    });
 
     app.get("/api/files", async (req, res) => {
       try {
