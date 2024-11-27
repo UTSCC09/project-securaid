@@ -24,6 +24,10 @@ export function LoginComponent(props) {
         (error) => setError(error.message),
         () => {
           onLogin(username);
+          enqueueSnackbar(
+            `Welcome back, ${username}.`,
+            { variant: "success" }
+          );
           e.target.reset();
         }
       );
@@ -40,6 +44,10 @@ export function LoginComponent(props) {
         (data) => {
           setError(""); // Clear error if sign-up is successful
           setSuccessMessage(data.message); // Show success message
+          enqueueSnackbar(
+            `Welcome, ${username}.`,
+            { variant: "success" }
+          );
           e.target.reset();
         }
       );

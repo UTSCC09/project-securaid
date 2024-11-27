@@ -1,8 +1,10 @@
+import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { MdOutlineAddBox } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import "./ShareFileComponent.css";
+
 
 export function ShareFileComponent({ userId, refreshTrigger }) {
   const [projects, setProjects] = useState([]);
@@ -13,6 +15,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [expiryHours, setExpiryHours] = useState(""); // Expiry time (hours)
   const [expiryMinutes, setExpiryMinutes] = useState(""); // Expiry time (minutes)
+  const { enqueueSnackbar } = useSnackbar();
 
   // Fetch projects associated with the user
   const fetchProjects = async () => {
@@ -99,12 +102,18 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
   // Handle file and user sharing
   const handleShare = async () => {
     if (selectedFiles.length === 0 || selectedUsers.length === 0) {
-      alert("Please select at least one file and one user.");
+      enqueueSnackbar(
+        `Please select at least one file and one user.`,
+        { variant: "warning" }
+      );
       return;
     }
 
     if (!expiryHours || !expiryMinutes) {
-      alert("Please specify expiry hours and minutes.");
+      enqueueSnackbar(
+        `Please specify expiry hours and minutes.`,
+        { variant: "warning" }
+      );
       return;
     }
 
@@ -143,15 +152,26 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
       let message = "";
       if (successes.length > 0) {
         message += `Successes:\n${successes.join("\n")}\n\n`;
+        enqueueSnackbar(
+          message,
+          { variant: "success" }
+        );
       }
       if (failures.length > 0) {
         message += `Failures:\n${failures.join("\n")}`;
+        enqueueSnackbar(
+          message,
+          { variant: "error" }
+        );
       }
 
-      alert(message || "No actions performed.");
+
     } catch (error) {
       console.error("Error sharing files:", error);
-      alert("An unexpected error occurred while sharing files.");
+enqueueSnackbar(
+        `An unexpected error occurred while sharing files. Please try again.`,
+        { variant: "error" }
+      );
     }
   };
 
@@ -194,8 +214,9 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
                           filesByProject[project._id] || []
                         ).filter((file) => {
                           if (currentFileIds.includes(file._id)) {
-                            alert(
-                              `File "${file.filename}" is already selected.`
+                            enqueueSnackbar(
+                              `File "${file.filename}" is already selected.`,
+                              { variant: "warning" }
                             );
                             return false;
                           }
