@@ -4,7 +4,8 @@ import "./SharedFilesComponent.css";
 export function SharedFilesComponent({ username }) {
   const [sharedFiles, setSharedFiles] = useState([]);
   const [error, setError] = useState(null);
-  const [fileToView, setFileToView] = useState(null); // State to store file URL for viewing
+  const [fileToView, setFileToView] = useState(null);
+  const [fileExpiryTime, setFileExpiryTime] = useState(null); // Store expiry time of the file being viewed
 
   const formatTime = (date) => {
     return date.toLocaleString("en-US", {
@@ -78,12 +79,15 @@ export function SharedFilesComponent({ username }) {
     }
   };
 
-  const handleView = (fileUrl) => {
-    setFileToView(fileUrl); // Set the file URL to view
+  const handleView = (file) => {
+    const expiresAt = calculateExpiryAt(file.createdAt, file.expiryTime);
+    setFileToView(file.fileUrl);
+    setFileExpiryTime(expiresAt);
   };
 
   const closeViewer = () => {
-    setFileToView(null); // Close the viewer
+    setFileToView(null);
+    setFileExpiryTime(null);
   };
 
   useEffect(() => {
@@ -95,6 +99,21 @@ export function SharedFilesComponent({ username }) {
 
     return () => clearInterval(intervalId);
   }, [username]);
+
+  useEffect(() => {
+    if (fileToView && fileExpiryTime) {
+      const checkInterval = setInterval(() => {
+        if (isExpired(fileExpiryTime)) {
+          closeViewer(); // Close the modal first
+          setTimeout(() => {
+            alert("The file has expired."); // Show alert after modal is closed
+          }, 0); // Small delay to ensure state updates first
+        }
+      }, 5000); // Check every 5 seconds
+
+      return () => clearInterval(checkInterval);
+    }
+  }, [fileToView, fileExpiryTime]);
 
   if (error) {
     return <div className="error-message">{error}</div>;
@@ -134,7 +153,7 @@ export function SharedFilesComponent({ username }) {
                 ) : (
                   <button
                     className="view-button"
-                    onClick={() => handleView(file.fileUrl)}
+                    onClick={() => handleView(file)}
                   >
                     View
                   </button>
