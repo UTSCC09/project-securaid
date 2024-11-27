@@ -106,8 +106,7 @@ async function connectToDatabase() {
 
         req.session.userId = user._id;
 
-        res.json({ message: "Login successful", userId: user._id })
-
+        res.json({ message: "Login successful", userId: user._id });
       } catch (error) {
         console.error("Error during login:", error);
         res.status(500).json({ message: "Error during login" });
@@ -332,10 +331,10 @@ async function connectToDatabase() {
 
     app.post("/api/share-file", async (req, res) => {
       try {
-        const { sharedTo, sharedBy, fileName, expiryTime } = req.body;
+        const { sharedTo, sharedBy, fileName, expiryTime, fileUrl } = req.body;
 
         // Validate input
-        if (!sharedTo || !sharedBy || !fileName || !expiryTime) {
+        if (!sharedTo || !sharedBy || !fileName || !expiryTime || !fileUrl) {
           return res.status(400).json({ error: "All fields are required." });
         }
 
@@ -345,6 +344,7 @@ async function connectToDatabase() {
           sharedBy, // Username of the sharer
           fileName,
           expiryTime,
+          fileUrl,
           createdAt: new Date(),
         };
 

@@ -121,6 +121,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
               sharedTo: user.username,
               sharedBy: userId,
               fileName: file.filename,
+              fileUrl: file.url,
               expiryTime: `${expiryHours}:${expiryMinutes}`,
             }),
           });
@@ -307,31 +308,35 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
         )}
       </div>
 
-      {projects.length > 0 && <><div className="expiration-input">
-        <label className="limit-parameters">
-          Expiry Time (Hours):
-          <input
-            type="number"
-            min="0"
-            max="23"
-            value={expiryHours}
-            onChange={(e) => setExpiryHours(e.target.value)}
-          />
-        </label>
-        <label className="limit-parameters">
-          Expiry Time (Minutes):
-          <input
-            type="number"
-            min="0"
-            max="59"
-            value={expiryMinutes}
-            onChange={(e) => setExpiryMinutes(e.target.value)}
-          />
-        </label>
-      </div>
-      <button id="share-button" onClick={handleShare}>
-        Share
-      </button></>}
+      {projects.length > 0 && (
+        <>
+          <div className="expiration-input">
+            <label className="limit-parameters">
+              Expiry Time (Hours):
+              <input
+                type="number"
+                min="0"
+                max="23"
+                value={expiryHours}
+                onChange={(e) => setExpiryHours(e.target.value)}
+              />
+            </label>
+            <label className="limit-parameters">
+              Expiry Time (Minutes):
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={expiryMinutes}
+                onChange={(e) => setExpiryMinutes(e.target.value)}
+              />
+            </label>
+          </div>
+          <button id="share-button" onClick={handleShare}>
+            Share
+          </button>
+        </>
+      )}
     </div>
   );
 }
