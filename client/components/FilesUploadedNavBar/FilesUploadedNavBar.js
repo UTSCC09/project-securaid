@@ -4,7 +4,12 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { SharedFilesComponent } from "../SharedFilesComponent/SharedFilesComponent";
 
-export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults, handleRefresh}) {
+export function FilesUploadedNavBar({
+  userId,
+  refreshTrigger,
+  onViewResults,
+  handleRefresh,
+}) {
   const [projects, setProjects] = useState([]);
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
@@ -124,7 +129,6 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults, han
     }
   };
 
-
   // Toggle project expansion with fetch if not already expanded
   const toggleProjectExpansion = (projectId) => {
     if (expandedProjects.includes(projectId)) {
@@ -143,7 +147,6 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults, han
       fetchProjects();
     }
   }, [userId, refreshTrigger]);
-
 
   return (
     <div className="files-uploaded-navbar">
@@ -190,11 +193,10 @@ export function FilesUploadedNavBar({ userId, refreshTrigger, onViewResults, han
             );
           })
         ) : (
-          <div>No projects found.</div>
+          <div className="no-shared-files">No projects.</div>
         )}
       </div>
       <SharedFilesComponent username={userId} />
-
     </div>
   );
 }

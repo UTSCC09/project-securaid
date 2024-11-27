@@ -2,7 +2,6 @@ import { useState } from "react";
 import { DashboardComponent } from "../DashboardComponent/DashboardComponent";
 import { FilesUploadedNavBar } from "../FilesUploadedNavBar/FilesUploadedNavBar";
 import { ShareFileComponent } from "../ShareFileComponent/ShareFileComponent";
-import { SharedFilesComponent } from "../SharedFilesComponent/SharedFilesComponent";
 import { UploadContentComponent } from "../UploadContentComponent/UploadContentComponent";
 
 import "./ContentComponent.css";

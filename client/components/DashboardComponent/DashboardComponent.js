@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { HyperText } from "../HyperText/HyperText";
 import "./DashboardComponent.css";
+import { MdPlaylistAdd } from "react-icons/md";
+
 
 export function DashboardComponent({ scanResults }) {
   const [analysisInfo, setAnalysisInfo] = useState(null);
@@ -50,7 +52,7 @@ export function DashboardComponent({ scanResults }) {
     <div className="dashboard_container">
       <div className="title">Dashboard</div>
       <div className="content">
-        {analysisInfo && (
+        {analysisInfo ? (
           <>
             <div className="scan_results">
               <HyperText
@@ -233,7 +235,7 @@ export function DashboardComponent({ scanResults }) {
               </div>
             </div>}
           </>
-        )}
+        ): <div className="no-shared-files" style={{textAlign:"left"}}>Add a project first.</div>}
       </div>
     </div>
   );
