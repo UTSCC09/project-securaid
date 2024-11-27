@@ -4,6 +4,7 @@ import { ContentComponent } from "../components/ContentComponent/ContentComponen
 import { Globe } from "../components/Globe/Globe";
 import { HyperText } from "../components/HyperText/HyperText";
 import { LoginComponent } from "../components/LoginComponent/LoginComponent";
+import { SnackbarProvider } from "notistack";
 import {
   handleSignin,
   handleSignout,
@@ -32,6 +33,8 @@ function Page() {
   }, []);
 
   return (
+    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+
     <div style={{ position: "relative" }}>
       <h1 id="homepage_title">Securaid</h1>
       <h4 id="homepage_slogan">A secure place for everyone</h4>
@@ -84,6 +87,7 @@ function Page() {
         </>
       )}
     </div>
+    </SnackbarProvider>
   );
 }
 

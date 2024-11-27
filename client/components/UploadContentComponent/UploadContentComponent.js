@@ -3,8 +3,11 @@
 import ExifReader from "exifreader"; // Import the ExifReader library
 import { useState } from "react";
 import "../UploadContentComponent/UploadContentComponent.css";
+import { useSnackbar } from "notistack";
 
 export function UploadContentComponent({ userId, onUploadSuccess, refreshTrigger }) {
+  const { enqueueSnackbar } = useSnackbar();
+
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [folderName, setFolderName] = useState("");
@@ -27,8 +30,9 @@ const [searchResults, setSearchResults] = useState([]);
       ];
       for (const key of suspiciousMetadata) {
         if (tags[key]) {
-          alert(
-            `Warning: Suspicious metadata detected in ${file.name} - ${key}`
+          enqueueSnackbar(
+            `Warning: Suspicious metadata detected in ${file.name} - ${key}`,
+            { variant: "warning" }
           );
           return false;
         }
@@ -36,8 +40,9 @@ const [searchResults, setSearchResults] = useState([]);
 
       // Check if the file has steganography indicators (hidden data)
       if (tags["MakerNote"] || tags["UserComment"]) {
-        alert(
-          `Warning: Hidden metadata detected in ${file.name}. File might contain steganography.`
+        enqueueSnackbar(
+          `Warning: Hidden metadata detected in ${file.name}. File might contain steganography.`,
+          { variant: "warning" }
         );
         return false;
       }
@@ -46,8 +51,9 @@ const [searchResults, setSearchResults] = useState([]);
       return true;
     } catch (error) {
       console.warn(`Error reading metadata for ${file.name}:`, error);
-      alert(
-        `Error analyzing metadata for ${file.name}. The file cannot be uploaded.`
+      enqueueSnackbar(
+        `Error analyzing metadata for ${file.name}. The file cannot be uploaded.`,
+        { variant: "error" }
       );
       return false;
     }
@@ -96,7 +102,7 @@ const [searchResults, setSearchResults] = useState([]);
       return result.scanId;
     } catch (error) {
       console.error("Error scanning with VirusTotal:", error);
-      alert("An error occurred while scanning the file.");
+      enqueueSnackbar("An error occurred while scanning the file.", { variant: "error" });
       return null;
     }
   };
@@ -108,7 +114,7 @@ const [searchResults, setSearchResults] = useState([]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!files.length || !folderName.trim()) {
-      alert("Please select files and provide a folder name.");
+      enqueueSnackbar("Please select files and provide a folder name.", { variant: "error" });
       return;
     }
 
@@ -129,7 +135,7 @@ const [searchResults, setSearchResults] = useState([]);
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Upload Error Response:", errorText);
-        alert("Failed to upload files.");
+        enqueueSnackbar("Failed to upload files.", { variant: "error" });
         return;
       }
 
@@ -144,6 +150,7 @@ const [searchResults, setSearchResults] = useState([]);
           })
         )
       );
+      enqueueSnackbar("Files uploaded successfully!", { variant: "success" });
 
       const fileLinks = uploadUrls.map(({ key }) => ({
         filename: key.split("/").pop(),
@@ -189,7 +196,7 @@ const [searchResults, setSearchResults] = useState([]);
       }
     } catch (error) {
       console.error("Error during upload and project creation:", error);
-      alert("An error occurred during the upload or project creation.");
+      enqueueSnackbar("An error occurred during the upload or project creation.", { variant: "error" });
     } finally {
       setUploading(false);
     }
