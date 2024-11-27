@@ -5,8 +5,8 @@ import { useSnackbar } from "notistack";
 export function SharedFilesComponent({ username }) {
   const [sharedFiles, setSharedFiles] = useState([]);
   const [error, setError] = useState(null);
-  const { enqueueSnackbar } = useSnackbar();
-
+  const [fileToView, setFileToView] = useState(null);
+  const [fileExpiryTime, setFileExpiryTime] = useState(null); // Store expiry time of the file being viewed
 
   const formatTime = (date) => {
     return date.toLocaleString("en-US", {
@@ -27,8 +27,6 @@ export function SharedFilesComponent({ username }) {
 
   const fetchSharedFiles = async () => {
     if (!username) {
-      console.error("Username is missing.");
-
       setError("Username is required to fetch shared files.");
       return;
     }
@@ -72,36 +70,55 @@ export function SharedFilesComponent({ username }) {
         setSharedFiles((prevFiles) =>
           prevFiles.filter((file) => file._id !== fileId)
         );
-        enqueueSnackbar(
-          `File successfully deleted!`,
-          { variant: "success" }
-        );
-
+        enqueueSnackbar(`File successfully deleted!`, { variant: "success" });
       } else {
-        enqueueSnackbar(
-          `Failed to delete file. Please try again.`,
-          { variant: "error" }
-        );
+        enqueueSnackbar(`Failed to delete file. Please try again.`, {
+          variant: "error",
+        });
       }
     } catch (error) {
       console.error("Error deleting file:", error);
-      enqueueSnackbar(
-        `An error occurred while deleting the file.`,
-        { variant: "error" }
-      );
+      enqueueSnackbar(`An error occurred while deleting the file.`, {
+        variant: "error",
+      });
     }
+  };
+
+  const handleView = (file) => {
+    const expiresAt = calculateExpiryAt(file.createdAt, file.expiryTime);
+    setFileToView(file.fileUrl);
+    setFileExpiryTime(expiresAt);
+  };
+
+  const closeViewer = () => {
+    setFileToView(null);
+    setFileExpiryTime(null);
   };
 
   useEffect(() => {
     fetchSharedFiles();
 
-    // Set up interval to refresh data every 30 seconds
     const intervalId = setInterval(() => {
       fetchSharedFiles();
     }, 30000);
 
     return () => clearInterval(intervalId);
   }, [username]);
+
+  useEffect(() => {
+    if (fileToView && fileExpiryTime) {
+      const checkInterval = setInterval(() => {
+        if (isExpired(fileExpiryTime)) {
+          closeViewer(); // Close the modal first
+          setTimeout(() => {
+            alert("The file has expired."); // Show alert after modal is closed
+          }, 0); // Small delay to ensure state updates first
+        }
+      }, 5000); // Check every 5 seconds
+
+      return () => clearInterval(checkInterval);
+    }
+  }, [fileToView, fileExpiryTime]);
 
   if (error) {
     return <div className="error-message">{error}</div>;
@@ -110,6 +127,12 @@ export function SharedFilesComponent({ username }) {
   if (sharedFiles.length === 0) {
     return <div className="no-shared-files">No shared files.</div>;
   }
+
+  const isImage = (file) => {
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
+    const extension = file.split(".").pop().toLowerCase();
+    return imageExtensions.includes(extension);
+  };
 
   return (
     <div className="shared-files-wrapper">
@@ -133,7 +156,10 @@ export function SharedFilesComponent({ username }) {
                     Expired
                   </button>
                 ) : (
-                  <button className="view-button" onClick={() => {}}>
+                  <button
+                    className="view-button"
+                    onClick={() => handleView(file)}
+                  >
                     View
                   </button>
                 )}
@@ -148,6 +174,31 @@ export function SharedFilesComponent({ username }) {
           );
         })}
       </ul>
+
+      {fileToView && (
+        <div className="file-viewer-modal">
+          <div className="file-viewer-content">
+            {isImage(fileToView) ? (
+              <img
+                src={fileToView}
+                alt="Uploaded file"
+                className="file-viewer-image"
+              />
+            ) : (
+              <iframe
+                src={fileToView}
+                className="file-viewer-frame"
+                title="File Viewer"
+              ></iframe>
+            )}
+            <div className="close-button-container">
+              <button className="close-button" onClick={closeViewer}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
