@@ -240,19 +240,3 @@ export function DashboardComponent({ scanResults }) {
     </div>
   );
 }
-// Analysis ID: f-c259d609e97f0a5cadf17b3822935cbcc85e8c272b2a04afef6baba75948a5d3-1732216623
-// DashboardComponent.js:27 Analysis Type: analysis
-// DashboardComponent.js:28 Analysis Status: completed
-// DashboardComponent.js:29 Self Link: https://www.virustotal.com/api/v3/analyses/f-c259d609e97f0a5cadf17b3822935cbcc85e8c272b2a04afef6baba75948a5d3-1732216623
-// DashboardComponent.js:30 Item Link: https://www.virustotal.com/api/v3/files/c259d609e97f0a5cadf17b3822935cbcc85e8c272b2a04afef6baba75948a5d3
-// DashboardComponent.js:33
-// === Statistics ===
-// DashboardComponent.js:35 malicious: 0
-// DashboardComponent.js:35 suspicious: 0
-// DashboardComponent.js:35 undetected: 62
-// DashboardComponent.js:35 harmless: 0
-// DashboardComponent.js:35 timeout: 0
-// DashboardComponent.js:35 confirmed-timeout: 0
-// DashboardComponent.js:35 failure: 1
-// DashboardComponent.js:35 type-unsupported: 13
-// DashboardComponent.js:39

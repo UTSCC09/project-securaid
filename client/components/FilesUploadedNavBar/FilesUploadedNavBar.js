@@ -1,8 +1,9 @@
+import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
-import "./FilesUploadedNavBar.css";
-import { RiDeleteBin6Line } from "react-icons/ri";
 import { HiOutlineDocumentReport } from "react-icons/hi";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import { SharedFilesComponent } from "../SharedFilesComponent/SharedFilesComponent";
+import "./FilesUploadedNavBar.css";
 
 export function FilesUploadedNavBar({
   userId,
@@ -10,6 +11,7 @@ export function FilesUploadedNavBar({
   onViewResults,
   handleRefresh,
 }) {
+  const { enqueueSnackbar } = useSnackbar();
   const [projects, setProjects] = useState([]);
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
@@ -96,21 +98,41 @@ export function FilesUploadedNavBar({
           );
 
           if (projectResponse.ok) {
-            alert("Project deleted as it had no remaining files.");
+            enqueueSnackbar(
+              `All files in project deleted successfully.`,
+              { variant: "success" }
+            );
+            enqueueSnackbar(
+              `No files remaining in project. Project deleted.`,
+              { variant: "success" }
+            );
             fetchProjects(); // Refresh the list of projects
           } else {
-            alert("Error deleting project.");
+            enqueueSnackbar(
+              `Error deleting project.`,
+              { variant: "error" }
+            );
           }
         } else {
           // Project still exists, refresh its files
           await fetchFiles(projectId);
+          enqueueSnackbar(
+            `File delete successfully!`,
+            { variant: "success" }
+          );
         }
       } else {
-        alert("Error deleting file.");
+        enqueueSnackbar(
+          `Error deleting file.`,
+          { variant: "error" }
+        );
       }
     } catch (error) {
       console.error("Error during file deletion:", error);
-      alert("An error occurred during file deletion.");
+      enqueueSnackbar(
+        `An error occurred during file deletion.`,
+        { variant: "error" }
+      );
     }
   };
 

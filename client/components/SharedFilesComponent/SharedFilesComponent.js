@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import "./SharedFilesComponent.css";
+import { useSnackbar } from "notistack";
 
 export function SharedFilesComponent({ username }) {
   const [sharedFiles, setSharedFiles] = useState([]);
   const [error, setError] = useState(null);
+  const { enqueueSnackbar } = useSnackbar();
+
 
   const formatTime = (date) => {
     return date.toLocaleString("en-US", {
@@ -24,7 +27,8 @@ export function SharedFilesComponent({ username }) {
 
   const fetchSharedFiles = async () => {
     if (!username) {
-      console.error("Username is missing."); // Log the issue
+      console.error("Username is missing.");
+
       setError("Username is required to fetch shared files.");
       return;
     }
@@ -68,13 +72,23 @@ export function SharedFilesComponent({ username }) {
         setSharedFiles((prevFiles) =>
           prevFiles.filter((file) => file._id !== fileId)
         );
-        alert("File successfully deleted!");
+        enqueueSnackbar(
+          `File successfully deleted!`,
+          { variant: "success" }
+        );
+
       } else {
-        alert("Failed to delete file. Please try again.");
+        enqueueSnackbar(
+          `Failed to delete file. Please try again.`,
+          { variant: "error" }
+        );
       }
     } catch (error) {
       console.error("Error deleting file:", error);
-      alert("An error occurred while deleting the file.");
+      enqueueSnackbar(
+        `An error occurred while deleting the file.`,
+        { variant: "error" }
+      );
     }
   };
 

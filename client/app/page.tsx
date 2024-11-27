@@ -33,7 +33,7 @@ function Page() {
   }, []);
 
   return (
-    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+    <SnackbarProvider maxSnack={5} autoHideDuration={2500}>
 
     <div style={{ position: "relative" }}>
       <h1 id="homepage_title">Securaid</h1>
