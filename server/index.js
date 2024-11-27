@@ -117,6 +117,7 @@ async function connectToDatabase() {
       try {
         const { folderName, uploadedLinks, userId, ownership } = req.body;
 
+        // Validate input
         if (
           !folderName ||
           !uploadedLinks ||
@@ -130,16 +131,27 @@ async function connectToDatabase() {
           });
         }
 
-        const project = {
-          folderName,
-          userId,
-          ownership,
-          createdAt: new Date(),
-        };
+        // Check if a project with the same folder name exists for the user
+        let project = await projectCollection.findOne({ folderName, userId });
 
-        const insertResult = await projectCollection.insertOne(project);
-        const projectId = insertResult.insertedId;
+        let projectId;
+        if (project) {
+          // If the project exists, use its ID
+          projectId = project._id;
+        } else {
+          // Create a new project if it doesn't exist
+          project = {
+            folderName,
+            userId,
+            ownership,
+            createdAt: new Date(),
+          };
 
+          const insertResult = await projectCollection.insertOne(project);
+          projectId = insertResult.insertedId;
+        }
+
+        // Prepare file documents to insert
         const fileDocuments = uploadedLinks.map((file) => ({
           projectId,
           userId,
@@ -150,19 +162,22 @@ async function connectToDatabase() {
           createdAt: new Date(),
         }));
 
+        // Insert files into the files collection
         await filesCollection.insertMany(fileDocuments);
 
+        // Respond with success message and project ID
         res.status(201).json({
-          message: "Project and files created successfully",
+          message: project ? "Files added to existing project successfully" : "Project and files created successfully",
           projectId,
         });
       } catch (error) {
-        console.error("Error creating project and saving file links:", error);
+        console.error("Error processing request:", error);
         res
           .status(500)
-          .json({ error: "An error occurred while creating the project." });
+          .json({ error: "An error occurred while processing the request." });
       }
     });
+
 
     app.get("/api/projects", async (req, res) => {
       try {
