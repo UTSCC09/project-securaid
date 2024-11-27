@@ -235,7 +235,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
             );
           })
         ) : (
-          <div>No projects found.</div>
+          <div className="no-shared-files">No files to share.</div>
         )}
         {selectedFiles.length > 0 && (
           <div className="selected-files">
@@ -306,7 +306,8 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
           </div>
         )}
       </div>
-      <div className="expiration-input">
+
+      {projects.length > 0 && <><div className="expiration-input">
         <label className="limit-parameters">
           Expiry Time (Hours):
           <input
@@ -330,7 +331,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
       </div>
       <button id="share-button" onClick={handleShare}>
         Share
-      </button>
+      </button></>}
     </div>
   );
 }

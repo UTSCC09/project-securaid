@@ -106,7 +106,7 @@ async function connectToDatabase() {
 
         req.session.userId = user._id;
 
-        res.redirect("/").json({ message: "Login successful", userId: user._id })
+        res.json({ message: "Login successful", userId: user._id })
 
       } catch (error) {
         console.error("Error during login:", error);
