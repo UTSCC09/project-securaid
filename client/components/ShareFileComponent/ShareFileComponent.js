@@ -137,7 +137,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
 
           if (response.ok) {
             successes.push(
-              `File "${file.filename}" shared with ${user.username}`
+              `File "${file.filename.split("_").slice(1).join("_")} shared with ${user.username}`
             );
           } else {
             const { error } = await response.json();
@@ -149,26 +149,27 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
       }
 
       // Summarize results in a single alert
-      let message = "";
       if (successes.length > 0) {
-        message += `Successes:\n${successes.join("\n")}\n\n`;
-        enqueueSnackbar(
-          message,
-          { variant: "success" }
-        );
+        for (const success of successes) {
+          enqueueSnackbar(
+            success,
+            { variant: "success" }
+          );
+        }
       }
       if (failures.length > 0) {
-        message += `Failures:\n${failures.join("\n")}`;
-        enqueueSnackbar(
-          message,
-          { variant: "error" }
-        );
+        for (const failure of failures) {
+          enqueueSnackbar(
+            failure,
+            { variant: "error" }
+          );
+        }
       }
 
 
     } catch (error) {
       console.error("Error sharing files:", error);
-enqueueSnackbar(
+      enqueueSnackbar(
         `An unexpected error occurred while sharing files. Please try again.`,
         { variant: "error" }
       );
