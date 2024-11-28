@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server",
     "dev": "nodemon server",
-    "prod": "NODE_ENV=production node server.js"
+    "prod": "NODE_ENV=production node index.js"
   },
   "author": "",
   "license": "ISC",
