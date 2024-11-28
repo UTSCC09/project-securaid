@@ -7,12 +7,12 @@ export function SharedFilesComponent({ username }) {
   const [sharedFiles, setSharedFiles] = useState([]);
   const [error, setError] = useState(null);
   const [fileToView, setFileToView] = useState(null);
-  const [pendingFile, setPendingFile] = useState(null); // Temporary file before OTP verification
+  const [pendingFile, setPendingFile] = useState(null);
   const [requiresOtp, setRequiresOtp] = useState(false);
   const [otp, setOtp] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [expiryTime, setExpiryTime] = useState(null); // Expiry time for the currently viewed file
+  const [expiryTime, setExpiryTime] = useState(null);
 
   const formatTime = (date) => {
     return date.toLocaleString("en-US", {
@@ -139,10 +139,10 @@ export function SharedFilesComponent({ username }) {
 
       const { email } = await response.json();
       setCurrentEmail(email);
-      setRequiresOtp(true); // Show the OTP modal
-      setPendingFile(file); // Save the file temporarily until OTP verification
-      setExpiryTime(calculateExpiryAt(file.createdAt, file.expiryTime)); // Set expiry time for the file
-      await requestOtp(email); // Send OTP to the current user's email
+      setRequiresOtp(true);
+      setPendingFile(file);
+      setExpiryTime(calculateExpiryAt(file.createdAt, file.expiryTime));
+      await requestOtp(email);
     } catch (error) {
       console.error("Error fetching user email:", error);
       enqueueSnackbar("An error occurred while retrieving your email.", {
@@ -161,10 +161,10 @@ export function SharedFilesComponent({ username }) {
 
       if (response.ok) {
         enqueueSnackbar("OTP verified successfully.", { variant: "success" });
-        setRequiresOtp(false); // Close OTP modal
-        setOtp(""); // Clear OTP input
-        setFileToView(pendingFile.fileUrl); // Show the file modal
-        setPendingFile(null); // Clear pending file
+        setRequiresOtp(false);
+        setOtp("");
+        setFileToView(pendingFile.fileUrl);
+        setPendingFile(null);
       } else {
         enqueueSnackbar("Invalid OTP. Please try again.", { variant: "error" });
       }
@@ -178,10 +178,9 @@ export function SharedFilesComponent({ username }) {
 
   const closeViewer = () => {
     setFileToView(null);
-    setExpiryTime(null); // Clear expiry time when the modal is closed
+    setExpiryTime(null);
   };
 
-  // Automatically close the modal if the file expires
   useEffect(() => {
     if (fileToView && expiryTime) {
       const intervalId = setInterval(() => {
