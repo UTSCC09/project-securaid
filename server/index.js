@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const PORT = 4000;
@@ -49,6 +50,14 @@ async function connectToDatabase() {
     const filesCollection = database.collection("files");
     const projectCollection = database.collection("projects");
     const sharedFilesCollection = database.collection("sharedFiles");
+    const otps = new Map();
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "securaid.otp@gmail.com",
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
 
     app.post("/api/users", async (req, res) => {
       try {
@@ -95,6 +104,23 @@ async function connectToDatabase() {
       } catch (error) {
         console.error("Error fetching all users:", error);
         res.status(500).json({ error: "Failed to fetch users." });
+      }
+    });
+
+    app.get("/api/user/:username", async (req, res) => {
+      try {
+        const { username } = req.params;
+
+        const user = await usersCollection.findOne({ username });
+
+        if (!user || !user.email) {
+          return res.status(404).json({ message: "User or email not found." });
+        }
+
+        res.json({ email: user.email });
+      } catch (error) {
+        console.error("Error fetching user email:", error);
+        res.status(500).json({ message: "Failed to retrieve user email." });
       }
     });
 
@@ -403,6 +429,49 @@ async function connectToDatabase() {
       } catch (error) {
         console.error("Error in shared files endpoint:", error); // Debug log
         res.status(500).json({ error: "Failed to fetch shared files." });
+      }
+    });
+
+    app.post("/api/generate-otp", async (req, res) => {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required." });
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+      const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes expiration
+
+      otps.set(email, { otp, expiresAt });
+
+      try {
+        await transporter.sendMail({
+          from: '"securaid" <securaid.otp@gmail.com>',
+          to: email,
+          subject: "Your OTP Code",
+          text: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
+        });
+
+        res.status(200).json({ message: "OTP sent successfully." });
+      } catch (error) {
+        console.error("Error sending OTP email:", error);
+        res.status(500).json({ message: "Failed to send OTP." });
+      }
+    });
+
+    app.post("/api/verify-otp", (req, res) => {
+      const { email, otp } = req.body;
+
+      const storedOtp = otps.get(email);
+      if (!storedOtp || storedOtp.expiresAt < Date.now()) {
+        return res.status(400).json({ message: "OTP expired or not found." });
+      }
+
+      if (storedOtp.otp === otp) {
+        otps.delete(email); // Clear OTP after successful validation
+        res.status(200).json({ message: "OTP verified successfully." });
+      } else {
+        res.status(400).json({ message: "Invalid OTP." });
       }
     });
 

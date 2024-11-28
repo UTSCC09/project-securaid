@@ -7,7 +7,12 @@ export function SharedFilesComponent({ username }) {
   const [sharedFiles, setSharedFiles] = useState([]);
   const [error, setError] = useState(null);
   const [fileToView, setFileToView] = useState(null);
-  const [fileExpiryTime, setFileExpiryTime] = useState(null); // Store expiry time of the file being viewed
+  const [pendingFile, setPendingFile] = useState(null); // Temporary file before OTP verification
+  const [requiresOtp, setRequiresOtp] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [currentEmail, setCurrentEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [expiryTime, setExpiryTime] = useState(null); // Expiry time for the currently viewed file
 
   const formatTime = (date) => {
     return date.toLocaleString("en-US", {
@@ -24,6 +29,12 @@ export function SharedFilesComponent({ username }) {
   const isExpired = (expiresAt) => {
     const now = new Date();
     return new Date(expiresAt) < now;
+  };
+
+  const isImage = (file) => {
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
+    const extension = file.split(".").pop().toLowerCase();
+    return imageExtensions.includes(extension);
   };
 
   const fetchSharedFiles = async () => {
@@ -71,30 +82,118 @@ export function SharedFilesComponent({ username }) {
         setSharedFiles((prevFiles) =>
           prevFiles.filter((file) => file._id !== fileId)
         );
-        enqueueSnackbar(`File successfully deleted!`, { variant: "success" });
+        enqueueSnackbar("File successfully deleted!", { variant: "success" });
       } else {
-        enqueueSnackbar(`Failed to delete file. Please try again.`, {
+        enqueueSnackbar("Failed to delete file. Please try again.", {
           variant: "error",
         });
       }
     } catch (error) {
       console.error("Error deleting file:", error);
-      enqueueSnackbar(`An error occurred while deleting the file.`, {
+      enqueueSnackbar("An error occurred while deleting the file.", {
         variant: "error",
       });
     }
   };
 
-  const handleView = (file) => {
-    const expiresAt = calculateExpiryAt(file.createdAt, file.expiryTime);
-    setFileToView(file.fileUrl);
-    setFileExpiryTime(expiresAt);
+  const requestOtp = async (email) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:4000/api/generate-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        enqueueSnackbar("OTP sent to your email.", { variant: "success" });
+      } else {
+        const errorData = await response.json();
+        enqueueSnackbar(errorData.message || "Failed to send OTP.", {
+          variant: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error requesting OTP:", error);
+      enqueueSnackbar("An error occurred while requesting OTP.", {
+        variant: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleView = async (file) => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/user/${username}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user email.");
+      }
+
+      const { email } = await response.json();
+      setCurrentEmail(email);
+      setRequiresOtp(true); // Show the OTP modal
+      setPendingFile(file); // Save the file temporarily until OTP verification
+      setExpiryTime(calculateExpiryAt(file.createdAt, file.expiryTime)); // Set expiry time for the file
+      await requestOtp(email); // Send OTP to the current user's email
+    } catch (error) {
+      console.error("Error fetching user email:", error);
+      enqueueSnackbar("An error occurred while retrieving your email.", {
+        variant: "error",
+      });
+    }
+  };
+
+  const verifyOtp = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: currentEmail, otp }),
+      });
+
+      if (response.ok) {
+        enqueueSnackbar("OTP verified successfully.", { variant: "success" });
+        setRequiresOtp(false); // Close OTP modal
+        setOtp(""); // Clear OTP input
+        setFileToView(pendingFile.fileUrl); // Show the file modal
+        setPendingFile(null); // Clear pending file
+      } else {
+        enqueueSnackbar("Invalid OTP. Please try again.", { variant: "error" });
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      enqueueSnackbar("An error occurred while verifying OTP.", {
+        variant: "error",
+      });
+    }
   };
 
   const closeViewer = () => {
     setFileToView(null);
-    setFileExpiryTime(null);
+    setExpiryTime(null); // Clear expiry time when the modal is closed
   };
+
+  // Automatically close the modal if the file expires
+  useEffect(() => {
+    if (fileToView && expiryTime) {
+      const intervalId = setInterval(() => {
+        if (isExpired(expiryTime)) {
+          enqueueSnackbar("File has expired.", { variant: "warning" });
+          closeViewer();
+        }
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [fileToView, expiryTime]);
 
   useEffect(() => {
     fetchSharedFiles();
@@ -106,21 +205,6 @@ export function SharedFilesComponent({ username }) {
     return () => clearInterval(intervalId);
   }, [username]);
 
-  useEffect(() => {
-    if (fileToView && fileExpiryTime) {
-      const checkInterval = setInterval(() => {
-        if (isExpired(fileExpiryTime)) {
-          closeViewer(); // Close the modal first
-          setTimeout(() => {
-            alert("The file has expired."); // Show alert after modal is closed
-          }, 0); // Small delay to ensure state updates first
-        }
-      }, 5000); // Check every 5 seconds
-
-      return () => clearInterval(checkInterval);
-    }
-  }, [fileToView, fileExpiryTime]);
-
   if (error) {
     return <div className="error-message">{error}</div>;
   }
@@ -128,12 +212,6 @@ export function SharedFilesComponent({ username }) {
   if (sharedFiles.length === 0) {
     return <div className="no-shared-files">No shared files.</div>;
   }
-
-  const isImage = (file) => {
-    const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
-    const extension = file.split(".").pop().toLowerCase();
-    return imageExtensions.includes(extension);
-  };
 
   return (
     <div className="shared-files-wrapper">
@@ -175,6 +253,41 @@ export function SharedFilesComponent({ username }) {
           );
         })}
       </ul>
+
+      {requiresOtp && (
+        <div className="otp-modal">
+          <div className="otp-content">
+            <h3>Verify OTP to View File</h3>
+            {isLoading ? (
+              <div className="loading-container">
+                <div className="spinner"></div>
+                <p className="loading-text">
+                  Sending OTP To Your Email. Please Wait...
+                </p>
+              </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  className="otp-input"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                />
+                <button className="otp-button" onClick={verifyOtp}>
+                  Submit
+                </button>
+                <button
+                  className="otp-button cancel"
+                  onClick={() => setRequiresOtp(false)}
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {fileToView && (
         <div className="file-viewer-modal">

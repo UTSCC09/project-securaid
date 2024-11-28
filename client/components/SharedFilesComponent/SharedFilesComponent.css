@@ -49,37 +49,6 @@
   text-align: center;
 }
 
-.view-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-top: 5px;
-  cursor: pointer;
-  transition: 0.1s ease-in-out;
-}
-
-.view-button:hover {
-  background-color: #171717;
-  color: #007bff;
-  cursor: pointer;
-  transition: 0.1s ease-in-out;
-}
-
-.shared-file-item {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 10px;
-  background-color: #282828;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  align-items: flex-start; /* Align button and text neatly */
-}
-
 .file-actions {
   display: flex;
   gap: 10px;
@@ -124,20 +93,6 @@
   background-color: #a71d2a;
 }
 
-.shared-file-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: #282828;
-  border-radius: 5px;
-  margin-bottom: 10px;
-}
-
-.file-details {
-  flex: 1;
-}
-
 .file-viewer-modal {
   position: fixed;
   top: 0;
@@ -158,20 +113,21 @@
   flex-direction: column;
   width: 80%;
   height: 80%;
-  overflow: hidden; /* Prevent content overflow */
-  padding: 15px; /* Add padding to create space inside content */
+  overflow: hidden;
+  padding: 15px;
 }
 
 .file-viewer-frame {
-  flex: 1; /* Ensure iframe takes most of the space */
+  flex: 1;
   border: none;
 }
 
 .file-viewer-image {
-  flex: 1; /* Allow image to take full space */
-  object-fit: contain; /* Scale the image to fit within the modal */
-  width: calc(100% - 30px); /* Subtract padding space */
-  height: calc(100% - 30px); /* Subtract padding space */
+  flex: 1;
+  object-fit: contain;
+  width: calc(100% - 30px);
+  height: calc(100% - 30px);
+  background-color: #f0f0f0;
 }
 
 .close-button-container {
@@ -193,4 +149,117 @@
 
 .close-button:hover {
   background-color: darkred;
+}
+
+.otp-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+
+.otp-content {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 300px;
+  position: relative;
+}
+
+.otp-content h3 {
+  font-size: 20px;
+  color: #007bff;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.otp-input {
+  width: 90%;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s, background-color 0.3s, box-shadow 0.3s;
+}
+
+.otp-input:focus {
+  border-color: #007bff;
+  background-color: #ffffff;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.otp-input::placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+.otp-button {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.otp-button:hover {
+  background-color: #0056b3;
+}
+
+.otp-button.cancel {
+  background-color: #dc3545;
+}
+
+.otp-button.cancel:hover {
+  background-color: #a71d2a;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+  text-align: center;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
