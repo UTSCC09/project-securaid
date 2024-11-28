@@ -1,5 +1,3 @@
-/* LoginComponent.css */
-
 .complex-form {
   max-width: 500px;
   min-width: 350px;
@@ -44,6 +42,7 @@
   background-color: rgba(255, 255, 255, 0.6);
   outline: none;
   transition: all 0.3s ease;
+  margin-bottom: 15px;
 }
 
 .form-element:focus {
@@ -92,4 +91,33 @@
   margin-top: 10px;
   background-color: white;
   border-radius: 6px;
+}
+
+.auth-button-secondary {
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.auth-button-secondary:hover {
+  background-color: #0056b3;
+}
+
+#auth-buttons_signin,
+#auth-buttons_signup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
 }

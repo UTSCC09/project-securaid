@@ -52,13 +52,19 @@ async function connectToDatabase() {
 
     app.post("/api/users", async (req, res) => {
       try {
-        const { username, password } = req.body;
+        const { username, password, email } = req.body;
 
-        const existingUser = await usersCollection.findOne({ username });
+        if (!email || !email.includes("@")) {
+          return res.status(400).json({ message: "Invalid email address." });
+        }
+
+        const existingUser = await usersCollection.findOne({
+          $or: [{ username }, { email }],
+        });
         if (existingUser) {
           return res.status(409).json({
             message:
-              "Username already exists. Please choose a different username.",
+              "Username or email already exists. Please choose a different one.",
           });
         }
 
@@ -68,10 +74,14 @@ async function connectToDatabase() {
         const user = {
           username,
           password: hashedPassword,
+          email,
         };
 
         const insertResult = await usersCollection.insertOne(user);
-        res.json({ message: "User inserted", userId: insertResult.insertedId });
+        res.json({
+          message: "User registered successfully.",
+          userId: insertResult.insertedId,
+        });
       } catch (error) {
         console.error("Error inserting user:", error);
         res.status(500).json({ message: "Error inserting user" });
@@ -90,26 +100,27 @@ async function connectToDatabase() {
 
     app.post("/api/users/login", async (req, res) => {
       try {
-        const { username, password } = req.body;
+        const { usernameOrEmail, password } = req.body;
 
-        const user = await usersCollection.findOne({ username });
+        const user = await usersCollection.findOne({
+          $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+        });
+
         if (!user) {
-          return res
-            .status(404)
-            .json({ message: "No user found with that username" });
+          return res.status(404).json({ message: "User not found." });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-          return res.status(401).json({ message: "Incorrect password" });
+          return res.status(401).json({ message: "Incorrect password." });
         }
 
         req.session.userId = user._id;
 
-        res.json({ message: "Login successful", userId: user._id });
+        res.json({ message: "Login successful", username: user.username }); // Return the username
       } catch (error) {
         console.error("Error during login:", error);
-        res.status(500).json({ message: "Error during login" });
+        res.status(500).json({ message: "Error during login." });
       }
     });
 
@@ -167,7 +178,9 @@ async function connectToDatabase() {
 
         // Respond with success message and project ID
         res.status(201).json({
-          message: project ? "Files added to existing project successfully" : "Project and files created successfully",
+          message: project
+            ? "Files added to existing project successfully"
+            : "Project and files created successfully",
           projectId,
         });
       } catch (error) {
@@ -177,7 +190,6 @@ async function connectToDatabase() {
           .json({ error: "An error occurred while processing the request." });
       }
     });
-
 
     app.get("/api/projects", async (req, res) => {
       try {

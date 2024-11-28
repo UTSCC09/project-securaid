@@ -1,90 +1,140 @@
-import { useRef, useState } from "react";
+import { useState, useRef } from "react";
 import "./LoginComponent.css";
 
 export function LoginComponent(props) {
   const { signup, signin, onLogin } = props;
+  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const usernameRef = useRef(null);
+  const usernameOrEmailRef = useRef(null);
   const passwordRef = useRef(null);
+  const usernameRef = useRef(null);
+  const emailRef = useRef(null);
+  const signUpPasswordRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  const handleSignIn = (e) => {
+    e.preventDefault();
+    const usernameOrEmail = usernameOrEmailRef.current.value;
+    const password = passwordRef.current.value;
+
+    signin(
+      usernameOrEmail,
+      password,
+      (error) => setError(error.message),
+      (username) => {
+        onLogin(username);
+        setError("");
+        setSuccessMessage("Logged in successfully.");
+        e.target.reset();
+      }
+    );
+  };
+
+  const handleSignUp = (e) => {
     e.preventDefault();
     const username = usernameRef.current.value;
-    const password = passwordRef.current.value;
-    const clickedButton = e.nativeEvent.submitter.id;
+    const email = emailRef.current.value;
+    const password = signUpPasswordRef.current.value;
 
-    if (clickedButton === "signin") {
-      setError(""); // Clear error when attempting to log in
-      setSuccessMessage(""); // Clear success message when attempting to log in
-      signin(
-        username,
-        password,
-        (error) => setError(error.message),
-        () => {
-          onLogin(username);
-          enqueueSnackbar(
-            `Welcome back, ${username}.`,
-            { variant: "success" }
-          );
-          e.target.reset();
-        }
-      );
-    } else if (clickedButton === "signup") {
-      setError(""); // Clear error when attempting to sign up
-      setSuccessMessage(""); // Clear success message when attempting to sign up
-      signup(
-        username,
-        password,
-        (error) => {
-          setError(error.message);
-          setSuccessMessage(""); // Clear success message if there's an error
-        },
-        (data) => {
-          setError(""); // Clear error if sign-up is successful
-          setSuccessMessage(data.message); // Show success message
-          enqueueSnackbar(
-            `Welcome, ${username}.`,
-            { variant: "success" }
-          );
-          e.target.reset();
-        }
-      );
-    }
+    signup(
+      username,
+      password,
+      email,
+      (error) => setError(error.message),
+      (data) => {
+        setError("");
+        setSuccessMessage(data.message);
+        e.target.reset();
+        setIsSignUp(false);
+      }
+    );
   };
 
   return (
-    <form className="complex-form" onSubmit={handleSubmit}>
-      <div className="form-title">Login</div>
-      <input
-        type="text"
-        id="form-username"
-        className="form-element"
-        placeholder="Enter your username"
-        name="username"
-        required
-        ref={usernameRef}
-      />
-      <input
-        type="password"
-        id="form-password"
-        className="form-element"
-        placeholder="Enter your password"
-        name="password"
-        required
-        ref={passwordRef}
-      />
-      {error && <div className="error">{error}</div>}
-      {successMessage && <div className="success">{successMessage}</div>}
-      <div id="auth-buttons_login">
-        <button type="submit" className="auth-button" id="signin">
-          Login
-        </button>
-        <button type="submit" className="auth-button" id="signup">
-          Sign Up
-        </button>
-      </div>
-    </form>
+    <div className="complex-form-wrapper">
+      {isSignUp ? (
+        <form className="complex-form" onSubmit={handleSignUp}>
+          <div className="form-title">Sign Up</div>
+          <input
+            type="text"
+            id="form-username"
+            className="form-element"
+            placeholder="Enter your username"
+            name="username"
+            required
+            ref={usernameRef}
+          />
+          <input
+            type="email"
+            id="form-email"
+            className="form-element"
+            placeholder="Enter your email"
+            name="email"
+            required
+            ref={emailRef}
+          />
+          <input
+            type="password"
+            id="form-password"
+            className="form-element"
+            placeholder="Enter your password"
+            name="password"
+            required
+            ref={signUpPasswordRef}
+          />
+          {error && <div className="error">{error}</div>}
+          {successMessage && <div className="success">{successMessage}</div>}
+          <div id="auth-buttons_signup">
+            <button type="submit" className="auth-button">
+              Sign Up
+            </button>
+            <button
+              type="button"
+              className="auth-button-secondary"
+              onClick={() => setIsSignUp(false)}
+            >
+              Go to Login
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form className="complex-form" onSubmit={handleSignIn}>
+          <div className="form-title">Sign In</div>
+          <input
+            type="text"
+            id="form-username-email"
+            className="form-element"
+            placeholder="Enter your username or email"
+            name="usernameOrEmail"
+            required
+            ref={usernameOrEmailRef}
+          />
+          <input
+            type="password"
+            id="form-password"
+            className="form-element"
+            placeholder="Enter your password"
+            name="password"
+            required
+            ref={passwordRef}
+          />
+          {error && <div className="error">{error}</div>}
+          {successMessage && <div className="success">{successMessage}</div>}
+          <div id="auth-buttons_signin">
+            <button type="submit" className="auth-button">
+              Sign In
+            </button>
+            <button
+              type="button"
+              className="auth-button-secondary"
+              onClick={() => setIsSignUp(true)}
+            >
+              Go to Sign Up
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }

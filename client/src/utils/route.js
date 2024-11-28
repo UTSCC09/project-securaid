@@ -7,23 +7,23 @@ function handleReponse(res) {
   return res.json();
 }
 
-export function handleSignin(username, password, fail, success) {
+export function handleSignin(usernameOrEmail, password, fail, success) {
   fetch("http://localhost:4000/api/users/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ usernameOrEmail, password }),
     credentials: "include",
   })
     .then(handleReponse)
-    .then(success)
+    .then((data) => success(data.username))
     .catch(fail);
 }
 
-export function handleSignup(username, password, fail, success) {
+export function handleSignup(username, password, email, fail, success) {
   fetch("http://localhost:4000/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, email }),
     credentials: "include",
   })
     .then(handleReponse)
