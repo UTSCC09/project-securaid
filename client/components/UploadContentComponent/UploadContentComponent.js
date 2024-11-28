@@ -1,84 +1,63 @@
 "use client";
-
-import ExifReader from "exifreader"; // Import the ExifReader library
+//import ExifReader from "exifreader";
 import { useState } from "react";
 import "../UploadContentComponent/UploadContentComponent.css";
 import { useSnackbar } from "notistack";
 
-export function UploadContentComponent({ userId, onUploadSuccess, refreshTrigger }) {
+export function UploadContentComponent({
+  userId,
+  onUploadSuccess,
+  refreshTrigger,
+}) {
   const { enqueueSnackbar } = useSnackbar();
 
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [uploadedLinks, setUploadedLinks] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-const [searchResults, setSearchResults] = useState([]);
 
+  // const checkImageMetadata = async (file) => {
+  //   const arrayBuffer = await file.arrayBuffer();
+  //   try {
+  //     const tags = ExifReader.load(arrayBuffer);
 
-  const checkImageMetadata = async (file) => {
-    const arrayBuffer = await file.arrayBuffer();
-    try {
-      const tags = ExifReader.load(arrayBuffer);
+  //     // Check for suspicious metadata
+  //     const suspiciousMetadata = [
+  //       "GPSLatitude",
+  //       "GPSLongitude",
+  //       "Software",
+  //       "Comment",
+  //     ];
+  //     for (const key of suspiciousMetadata) {
+  //       if (tags[key]) {
+  //         enqueueSnackbar(
+  //           `Warning: Suspicious metadata detected in ${file.name} - ${key}`,
+  //           { variant: "warning" }
+  //         );
+  //         return false;
+  //       }
+  //     }
 
-      // Check for suspicious metadata
-      const suspiciousMetadata = [
-        "GPSLatitude",
-        "GPSLongitude",
-        "Software",
-        "Comment",
-      ];
-      for (const key of suspiciousMetadata) {
-        if (tags[key]) {
-          enqueueSnackbar(
-            `Warning: Suspicious metadata detected in ${file.name} - ${key}`,
-            { variant: "warning" }
-          );
-          return false;
-        }
-      }
+  //     // Check if the file has steganography indicators (hidden data)
+  //     if (tags["MakerNote"] || tags["UserComment"]) {
+  //       enqueueSnackbar(
+  //         `Warning: Hidden metadata detected in ${file.name}. File might contain steganography.`,
+  //         { variant: "warning" }
+  //       );
+  //       return false;
+  //     }
 
-      // Check if the file has steganography indicators (hidden data)
-      if (tags["MakerNote"] || tags["UserComment"]) {
-        enqueueSnackbar(
-          `Warning: Hidden metadata detected in ${file.name}. File might contain steganography.`,
-          { variant: "warning" }
-        );
-        return false;
-      }
-
-      // If no issues, return true
-      return true;
-    } catch (error) {
-      console.warn(`Error reading metadata for ${file.name}:`, error);
-      enqueueSnackbar(
-        `Error analyzing metadata for ${file.name}. The file cannot be uploaded.`,
-        { variant: "error" }
-      );
-      return false;
-    }
-  };
-  const handleSearchChange = async (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    // Use the query as the folder name
-    setFolderName(query);
-
-    if (query.trim()) {
-      try {
-        const response = await fetch(`/api/search-projects?query=${query}`);
-        const data = await response.json();
-        setSearchResults(data.projects || []);
-      } catch (error) {
-        console.error("Error searching projects:", error);
-        setSearchResults([]);
-      }
-    } else {
-      setSearchResults([]);
-    }
-  };
-
+  // //     // If no issues, return true
+  //     return true;
+  //   } catch (error) {
+  //     console.warn(`Error reading metadata for ${file.name}:`, error);
+  //     enqueueSnackbar(
+  //       `Error analyzing metadata for ${file.name}. The file cannot be uploaded.`,
+  //       { variant: "error" }
+  //     );
+  //     return false;
+  //   }
+  // };
 
   const scanWithVirusTotal = async (filePath) => {
     try {
@@ -102,19 +81,19 @@ const [searchResults, setSearchResults] = useState([]);
       return result.scanId;
     } catch (error) {
       console.error("Error scanning with VirusTotal:", error);
-      enqueueSnackbar("An error occurred while scanning the file.", { variant: "error" });
+      enqueueSnackbar("An error occurred while scanning the file.", {
+        variant: "error",
+      });
       return null;
     }
   };
-  const handleSelectSearchResult = (projectName) => {
-    setFolderName(projectName);
-    setSearchQuery(projectName); // Update the search query
-    setSearchResults([]); // Clear the search results
-  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!files.length || !folderName.trim()) {
-      enqueueSnackbar("Please select files and provide a folder name.", { variant: "error" });
+      enqueueSnackbar("Please select files and provide a folder name.", {
+        variant: "error",
+      });
       return;
     }
 
@@ -157,7 +136,6 @@ const [searchResults, setSearchResults] = useState([]);
         url: `https://securaid.s3.ca-central-1.amazonaws.com/${key}`,
       }));
 
-      // Scan files with VirusTotal
       const scanResults = await Promise.all(
         fileLinks.map(async (fileLink) => {
           const scanId = await scanWithVirusTotal(fileLink.url);
@@ -165,7 +143,6 @@ const [searchResults, setSearchResults] = useState([]);
         })
       );
 
-      // Save project and file metadata to the backend
       const projectResponse = await fetch(
         "http://localhost:4000/api/projects",
         {
@@ -175,7 +152,7 @@ const [searchResults, setSearchResults] = useState([]);
           },
           body: JSON.stringify({
             folderName,
-            uploadedLinks: scanResults, // Includes scanId
+            uploadedLinks: scanResults,
             userId,
           }),
         }
@@ -183,9 +160,8 @@ const [searchResults, setSearchResults] = useState([]);
 
       if (!projectResponse.ok) {
         throw new Error("Failed to create project in the backend.");
-      }
-      else if(projectResponse.ok)
-        { setUploadedLinks(scanResults);
+      } else if (projectResponse.ok) {
+        setUploadedLinks(scanResults);
       }
 
       const { projectId } = await projectResponse.json();
@@ -196,7 +172,10 @@ const [searchResults, setSearchResults] = useState([]);
       }
     } catch (error) {
       console.error("Error during upload and project creation:", error);
-      enqueueSnackbar("An error occurred during the upload or project creation.", { variant: "error" });
+      enqueueSnackbar(
+        "An error occurred during the upload or project creation.",
+        { variant: "error" }
+      );
     } finally {
       setUploading(false);
     }
