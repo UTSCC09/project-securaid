@@ -90,6 +90,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const ensureAuthenticated = (req, res, next) => {
+  console.log("Current session:", req.session);
   if (req.session.userId) {
     return next();
   }
@@ -167,13 +168,14 @@ async function connectToDatabase() {
       passport.authenticate("google", { failureRedirect: "http://localhost:3000" }),
       (req, res) => {
         const user = req.user; // Get the authenticated user
-        if (req.session.isNewSignUp) {
-          res.redirect(`http://localhost:3000?signupSuccess=true`);
-        } else {
-          res.redirect(`http://localhost:3000?username=${user.username}`);
-        }
+        // Store user ID in the session
+        req.session.userId = user._id; // Assuming MongoDB ObjectId
+        console.log("Session userId set:", req.session.userId);
+
+        res.redirect(`http://localhost:3000?username=${user.username}`);
       }
     );
+
 
 
     app.get("/auth/logout", (req, res) => {
@@ -258,6 +260,7 @@ async function connectToDatabase() {
       validateRequest,
       ensureAuthenticated,
       async (req, res) => {
+        console.log("Received data:", req.body);
         try {
           const { folderName, uploadedLinks, userId, ownership } = req.body;
 

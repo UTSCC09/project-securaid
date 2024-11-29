@@ -143,20 +143,24 @@ export function UploadContentComponent({
         })
       );
 
-      const projectResponse = await fetch(
-        "http://localhost:4000/api/projects",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            folderName,
-            uploadedLinks: scanResults,
-            userId,
-          }),
-        }
-      );
+      const projectResponse = await fetch("http://localhost:4000/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          folderName,
+          uploadedLinks: scanResults.map(({ filename, url, scanId }) => ({
+            filename,
+            url,
+            scanId,
+          })),
+          userId,
+          ownership: "private",
+        }),
+        credentials: "include",
+      });
+
 
       if (!projectResponse.ok) {
         throw new Error("Failed to create project in the backend.");

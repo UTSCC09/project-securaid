@@ -21,26 +21,17 @@ export function LoginComponent(props) {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const username = params.get("username");
-    const signupSuccess = params.get("signupSuccess");
 
     if (username) {
-      onLogin(username); // Update the username in the parent state
+      onLogin(username); // Update state with the logged-in user
+      enqueueSnackbar("Logged in successfully with Google!", { variant: "success" });
 
-      // Show success notification
-      enqueueSnackbar("Logged in successfully!", { variant: "success" });
-
-      // Remove the username parameter from the URL
-      const newUrl = window.location.origin + window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    } else if (signupSuccess) {
-      // Show signup success notification
-      enqueueSnackbar("Sign-up successful! Please log in.", { variant: "success" });
-
-      // Remove the signupSuccess parameter from the URL
+      // Clean up the URL
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
   }, [onLogin, enqueueSnackbar]);
+
 
   const extractErrorMessage = (error) => {
     try {
