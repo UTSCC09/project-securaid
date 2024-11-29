@@ -7,6 +7,8 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const nodemailer = require("nodemailer");
+const { body, param, query, validationResult } = require("express-validator");
+
 
 const app = express();
 const PORT = 4000;
@@ -36,6 +38,8 @@ app.use(
     },
   })
 );
+
+
 
 
 // MongoDB connection setup
@@ -79,14 +83,27 @@ passport.use(
     }
   )
 );
-
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+const ensureAuthenticated = (req, res, next) => {
+  if (req.session.userId) {
+    return next();
+  }
+  res.status(401).json({ message: "Unauthorized. Please log in." });
+};
 
+// Input validation and sanitization
+const validateRequest = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+};
 async function connectToDatabase() {
   try {
     await client.connect();
@@ -106,43 +123,40 @@ async function connectToDatabase() {
       },
     });
 
-    app.post("/api/users", async (req, res) => {
-      try {
-        const { username, password, email } = req.body;
+    app.post(
+      "/api/users",
+      [
+        body("username").isString().trim().escape().notEmpty(),
+        body("password").isString().trim().isLength({ min: 6 }).escape(),
+        body("email").isEmail().normalizeEmail(),
+      ],
+      validateRequest, // This middleware checks validation results
+      async (req, res) => {
+        try {
+          const { username, password, email } = req.body;
 
-        if (!email || !email.includes("@")) {
-          return res.status(400).json({ message: "Invalid email address." });
-        }
-
-        const existingUser = await usersCollection.findOne({
-          $or: [{ username }, { email }],
-        });
-        if (existingUser) {
-          return res.status(409).json({
-            message:
-              "Username or email already exists. Please choose a different one.",
+          const existingUser = await usersCollection.findOne({
+            $or: [{ username }, { email }],
           });
+          if (existingUser) {
+            return res.status(409).json({
+              message: "Username or email already exists. Please choose a different one.",
+            });
+          }
+
+          const hashedPassword = await bcrypt.hash(password, 10);
+
+          const user = { username, password: hashedPassword, email };
+          const insertResult = await usersCollection.insertOne(user);
+
+          res.json({ message: "User registered successfully.", userId: insertResult.insertedId });
+        } catch (error) {
+          console.error("Error inserting user:", error);
+          res.status(500).json({ message: "Error inserting user" });
         }
-
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        const user = {
-          username,
-          password: hashedPassword,
-          email,
-        };
-
-        const insertResult = await usersCollection.insertOne(user);
-        res.json({
-          message: "User registered successfully.",
-          userId: insertResult.insertedId,
-        });
-      } catch (error) {
-        console.error("Error inserting user:", error);
-        res.status(500).json({ message: "Error inserting user" });
       }
-    });
+    );
+
     app.get(
       "/auth/google",
       passport.authenticate("google", { scope: ["profile", "email"] })
@@ -181,115 +195,105 @@ async function connectToDatabase() {
       }
     });
 
-    app.get("/api/user/:username", async (req, res) => {
-      try {
-        const { username } = req.params;
+    app.get(
+      "/api/user/:username",
+      [
+        param("username").isString().trim().escape(),
+      ],
+      validateRequest,
+      ensureAuthenticated,
+      async (req, res) => {
+        try {
+          const { username } = req.params;
 
-        const user = await usersCollection.findOne({ username });
+          const user = await usersCollection.findOne({ username });
+          if (!user) {
+            return res.status(404).json({ message: "User not found." });
+          }
 
-        if (!user || !user.email) {
-          return res.status(404).json({ message: "User or email not found." });
+          res.json({ email: user.email });
+        } catch (error) {
+          console.error("Error fetching user email:", error);
+          res.status(500).json({ message: "Failed to retrieve user email." });
         }
-
-        res.json({ email: user.email });
-      } catch (error) {
-        console.error("Error fetching user email:", error);
-        res.status(500).json({ message: "Failed to retrieve user email." });
       }
-    });
+    );
 
-    app.post("/api/users/login", async (req, res) => {
-      try {
-        const { usernameOrEmail, password } = req.body;
+    app.post(
+      "/api/users/login",
+      [
+        body("usernameOrEmail").isString().trim().escape(),
+        body("password").isString().trim().escape(),
+      ],
+      validateRequest,
+      async (req, res) => {
+        try {
+          const { usernameOrEmail, password } = req.body;
 
-        const user = await usersCollection.findOne({
-          $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
-        });
-
-        if (!user) {
-          return res.status(404).json({ message: "User not found." });
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-          return res.status(401).json({ message: "Incorrect password." });
-        }
-
-        req.session.userId = user._id;
-
-        res.json({ message: "Login successful", username: user.username }); // Return the username
-      } catch (error) {
-        console.error("Error during login:", error);
-        res.status(500).json({ message: "Error during login." });
-      }
-    });
-
-    app.post("/api/projects", async (req, res) => {
-      try {
-        const { folderName, uploadedLinks, userId, ownership } = req.body;
-
-        // Validate input
-        if (
-          !folderName ||
-          !uploadedLinks ||
-          !Array.isArray(uploadedLinks) ||
-          uploadedLinks.length === 0 ||
-          !userId
-        ) {
-          return res.status(400).json({
-            error:
-              "Invalid input. Folder name, user ID, and file links are required.",
+          const user = await usersCollection.findOne({
+            $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
           });
+
+          if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ message: "Invalid credentials." });
+          }
+
+          req.session.userId = user._id;
+          res.json({ message: "Login successful", username: user.username });
+        } catch (error) {
+          console.error("Error during login:", error);
+          res.status(500).json({ message: "Error during login." });
         }
+      }
+    );
 
-        // Check if a project with the same folder name exists for the user
-        let project = await projectCollection.findOne({ folderName, userId });
+    app.post(
+      "/api/projects",
+      [
+        body("folderName").isString().trim().escape(),
+        body("uploadedLinks").isArray(),
+        body("userId").isString().trim().escape(),
+        body("ownership").isString().trim().escape(),
+      ],
+      validateRequest,
+      ensureAuthenticated,
+      async (req, res) => {
+        try {
+          const { folderName, uploadedLinks, userId, ownership } = req.body;
 
-        let projectId;
-        if (project) {
-          // If the project exists, use its ID
-          projectId = project._id;
-        } else {
-          // Create a new project if it doesn't exist
-          project = {
-            folderName,
+          const project = await database.collection("projects").findOne({ folderName, userId });
+
+          let projectId;
+          if (project) {
+            projectId = project._id;
+          } else {
+            const insertResult = await database.collection("projects").insertOne({
+              folderName,
+              userId,
+              ownership,
+              createdAt: new Date(),
+            });
+            projectId = insertResult.insertedId;
+          }
+
+          const fileDocuments = uploadedLinks.map((file) => ({
+            projectId,
             userId,
+            filename: file.filename,
+            url: file.url,
             ownership,
             createdAt: new Date(),
-          };
+          }));
 
-          const insertResult = await projectCollection.insertOne(project);
-          projectId = insertResult.insertedId;
+          await database.collection("files").insertMany(fileDocuments);
+
+          res.status(201).json({ message: "Project and files created successfully.", projectId });
+        } catch (error) {
+          console.error("Error processing request:", error);
+          res.status(500).json({ message: "Error processing request." });
         }
-
-        // Prepare file documents to insert
-        const fileDocuments = uploadedLinks.map((file) => ({
-          projectId,
-          userId,
-          filename: file.filename,
-          url: file.url,
-          scanId: file.scanId || null, // Include scanId
-          ownership,
-          createdAt: new Date(),
-        }));
-
-        // Insert files into the files collection
-        await filesCollection.insertMany(fileDocuments);
-
-        // Respond with success message and project ID
-        res.status(201).json({
-          message: project
-            ? "Files added to existing project successfully"
-            : "Project and files created successfully",
-          projectId,
-        });
-      } catch (error) {
-        console.error("Error processing request:", error);
-        res
-          .status(500)
-          .json({ error: "An error occurred while processing the request." });
       }
-    });
+    );
 
     app.get("/api/projects", async (req, res) => {
       try {

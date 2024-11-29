@@ -1,3 +1,4 @@
+import { useSnackbar } from "notistack";
 import { useEffect, useRef, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import "./LoginComponent.css";
@@ -5,8 +6,7 @@ import "./LoginComponent.css";
 export function LoginComponent(props) {
   const { signup, signin, onLogin } = props;
   const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const { enqueueSnackbar } = useSnackbar();
 
   const usernameOrEmailRef = useRef(null);
   const passwordRef = useRef(null);
@@ -26,16 +26,31 @@ export function LoginComponent(props) {
     if (username) {
       onLogin(username); // Update the username in the parent state
 
+      // Show success notification
+      enqueueSnackbar("Logged in successfully!", { variant: "success" });
+
       // Remove the username parameter from the URL
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     } else if (signupSuccess) {
-      setSuccessMessage("Sign-up successful! Please log in.");
+      // Show signup success notification
+      enqueueSnackbar("Sign-up successful! Please log in.", { variant: "success" });
+
       // Remove the signupSuccess parameter from the URL
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
-  }, [onLogin]);
+  }, [onLogin, enqueueSnackbar]);
+
+  const extractErrorMessage = (error) => {
+    try {
+      const parsedError = JSON.parse(error.message.split("(status:")[0].trim());
+      return parsedError.message || "An error occurred.";
+    } catch {
+      return error.message?.split("(status:")[0].trim() || "An error occurred.";
+    }
+  };
+
 
   const handleSignIn = (e) => {
     e.preventDefault();
@@ -45,11 +60,10 @@ export function LoginComponent(props) {
     signin(
       usernameOrEmail,
       password,
-      (error) => setError(error.message),
+      (error) => enqueueSnackbar(extractErrorMessage(error), { variant: "error" }),
       (username) => {
         onLogin(username);
-        setError("");
-        setSuccessMessage("Logged in successfully.");
+        enqueueSnackbar("Logged in successfully!", { variant: "success" });
         e.target.reset();
       }
     );
@@ -65,10 +79,9 @@ export function LoginComponent(props) {
       username,
       password,
       email,
-      (error) => setError(error.message),
+      (error) => enqueueSnackbar(extractErrorMessage(error), { variant: "error" }),
       (data) => {
-        setError("");
-        setSuccessMessage(data.message);
+        enqueueSnackbar(data.message, { variant: "success" });
         e.target.reset();
         setIsSignUp(false);
       }
@@ -107,22 +120,24 @@ export function LoginComponent(props) {
             required
             ref={signUpPasswordRef}
           />
-          {error && <div className="error">{error}</div>}
-          {successMessage && <div className="success">{successMessage}</div>}
           <div id="auth-buttons_signup">
             <button type="submit" className="auth-button">
               Sign Up
             </button>
+            <div>Or</div>
             <button onClick={handleGoogleSignIn} className="auth-button-google">
               Sign Up with Google <FcGoogle />
             </button>
-            <button
-              type="button"
-              className="auth-button-secondary"
-              onClick={() => setIsSignUp(false)}
-            >
-              Go to Login
-            </button>
+            <div>
+              Already have an account?{" "}
+              <button
+                type="button"
+                className="auth-button-secondary"
+                onClick={() => setIsSignUp(false)}
+              >
+                Log In
+              </button>
+            </div>
           </div>
         </form>
       ) : (
@@ -146,8 +161,6 @@ export function LoginComponent(props) {
             required
             ref={passwordRef}
           />
-          {error && <div className="error">{error}</div>}
-          {successMessage && <div className="success">{successMessage}</div>}
           <div id="auth-buttons_signin">
             <button type="submit" className="auth-button">
               Sign In
@@ -156,13 +169,16 @@ export function LoginComponent(props) {
             <button onClick={handleGoogleSignIn} className="auth-button-google">
               Log In with Google <FcGoogle />
             </button>
-            <button
-              type="button"
-              className="auth-button-secondary"
-              onClick={() => setIsSignUp(true)}
-            >
-              Go to Sign Up
-            </button>
+            <div>
+              New here?{" "}
+              <button
+                type="button"
+                className="auth-button-secondary"
+                onClick={() => setIsSignUp(true)}
+              >
+                Sign Up
+              </button>
+            </div>
           </div>
         </form>
       )}
