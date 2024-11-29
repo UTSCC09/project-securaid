@@ -180,11 +180,23 @@ async function connectToDatabase() {
 
     app.get("/auth/logout", (req, res) => {
       req.logout((err) => {
-        if (err) return res.status(500).json({ error: "Logout failed" });
-        res.clearCookie("session");
-        res.redirect("http://localhost:3000");
+        if (err) {
+          console.error("Error during logout:", err);
+          return res.status(500).json({ message: "Error during logout" });
+        }
+
+        req.session.destroy((err) => {
+          if (err) {
+            console.error("Failed to destroy session:", err);
+            return res.status(500).json({ message: "Failed to destroy session" });
+          }
+
+          res.clearCookie("connect.sid");
+          res.status(200).json({ message: "Logged out successfully" });
+        });
       });
     });
+
 
 
     app.get("/api/all-users", async (req, res) => {

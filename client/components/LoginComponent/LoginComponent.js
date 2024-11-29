@@ -18,6 +18,7 @@ export function LoginComponent(props) {
     window.location.href = "http://localhost:4000/auth/google";
   };
 
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const username = params.get("username");
