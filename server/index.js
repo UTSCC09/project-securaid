@@ -37,8 +37,55 @@ app.use(
   })
 );
 
+
 // MongoDB connection setup
 const client = new MongoClient(process.env.MONGODB_URI);
+let usersCollection;
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+
+
+
+// Configure Passport
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:4000/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const { id, displayName, emails } = profile;
+        const email = emails[0].value;
+
+        // Check if user exists in the database
+        let user = await usersCollection.findOne({ googleId: id });
+
+        if (!user) {
+          // Create a new user
+          user = {
+            googleId: id,
+            username: displayName,
+            email,
+          };
+          await usersCollection.insertOne(user);
+        }
+
+        done(null, user); // Pass the user to the next middleware
+      } catch (error) {
+        done(error, null);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 async function connectToDatabase() {
   try {
@@ -46,7 +93,7 @@ async function connectToDatabase() {
     console.log("Connected to MongoDB!");
 
     const database = client.db("securaid");
-    const usersCollection = database.collection("users");
+    usersCollection = database.collection("users");
     const filesCollection = database.collection("files");
     const projectCollection = database.collection("projects");
     const sharedFilesCollection = database.collection("sharedFiles");
@@ -96,6 +143,33 @@ async function connectToDatabase() {
         res.status(500).json({ message: "Error inserting user" });
       }
     });
+    app.get(
+      "/auth/google",
+      passport.authenticate("google", { scope: ["profile", "email"] })
+    );
+
+    app.get(
+      "/auth/google/callback",
+      passport.authenticate("google", { failureRedirect: "http://localhost:3000" }),
+      (req, res) => {
+        const user = req.user; // Get the authenticated user
+        if (req.session.isNewSignUp) {
+          res.redirect(`http://localhost:3000?signupSuccess=true`);
+        } else {
+          res.redirect(`http://localhost:3000?username=${user.username}`);
+        }
+      }
+    );
+
+
+    app.get("/auth/logout", (req, res) => {
+      req.logout((err) => {
+        if (err) return res.status(500).json({ error: "Logout failed" });
+        res.clearCookie("session");
+        res.redirect("http://localhost:3000");
+      });
+    });
+
 
     app.get("/api/all-users", async (req, res) => {
       try {
