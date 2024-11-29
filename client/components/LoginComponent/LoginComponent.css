@@ -5,9 +5,9 @@
   border-radius: 15px;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-  gap: 20px;
+  background: #171717;
+  border: 2px solid var(--font_colour);
+    gap: 20px;
   font-family: var(--font-Helvetica);
   transition: all 0.3s ease;
   margin-top: 30px;
