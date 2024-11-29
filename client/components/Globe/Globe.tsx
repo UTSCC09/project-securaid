@@ -102,16 +102,29 @@ export function Globe({
     window.addEventListener("resize", onResize);
     onResize();
 
-    const globe = createGlobe(canvasRef.current!, {
-      ...config,
-      width: width * 2,
-      height: width * 2,
-      onRender,
-    });
+    if (canvasRef.current) {
+      const globe = createGlobe(canvasRef.current, {
+        ...config,
+        width: width * 2,
+        height: width * 2,
+        onRender,
+      });
 
-    setTimeout(() => (canvasRef.current!.style.opacity = "1"));
-    return () => globe.destroy();
-  }, []);
+      // Ensure canvasRef.current exists before modifying its style
+      const timeout = setTimeout(() => {
+        if (canvasRef.current) {
+          canvasRef.current.style.opacity = "1";
+        }
+      }, 0);
+
+      return () => {
+        clearTimeout(timeout); // Clean up the timeout
+        globe.destroy();
+        window.removeEventListener("resize", onResize); // Clean up event listener
+      };
+    }
+  }, [config]);
+
 
   return (
     <div

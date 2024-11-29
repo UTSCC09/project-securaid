@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FcGoogle } from "react-icons/fc";
 import "./LoginComponent.css";
 
 export function LoginComponent(props) {
@@ -12,6 +13,29 @@ export function LoginComponent(props) {
   const usernameRef = useRef(null);
   const emailRef = useRef(null);
   const signUpPasswordRef = useRef(null);
+
+  const handleGoogleSignIn = () => {
+    window.location.href = "http://localhost:4000/auth/google";
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const username = params.get("username");
+    const signupSuccess = params.get("signupSuccess");
+
+    if (username) {
+      onLogin(username); // Update the username in the parent state
+
+      // Remove the username parameter from the URL
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    } else if (signupSuccess) {
+      setSuccessMessage("Sign-up successful! Please log in.");
+      // Remove the signupSuccess parameter from the URL
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [onLogin]);
 
   const handleSignIn = (e) => {
     e.preventDefault();
@@ -89,6 +113,9 @@ export function LoginComponent(props) {
             <button type="submit" className="auth-button">
               Sign Up
             </button>
+            <button onClick={handleGoogleSignIn} className="auth-button-google">
+              Sign Up with Google <FcGoogle />
+            </button>
             <button
               type="button"
               className="auth-button-secondary"
@@ -124,6 +151,10 @@ export function LoginComponent(props) {
           <div id="auth-buttons_signin">
             <button type="submit" className="auth-button">
               Sign In
+            </button>
+            <div>Or</div>
+            <button onClick={handleGoogleSignIn} className="auth-button-google">
+              Log In with Google <FcGoogle />
             </button>
             <button
               type="button"

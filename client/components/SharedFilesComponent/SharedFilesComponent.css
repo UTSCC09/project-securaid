@@ -1,8 +1,8 @@
 .shared-files-wrapper {
   background-color: #171717;
   border-radius: 8px;
-  padding: 20px;
-  margin-top: 20px;
+  padding: 5px 10px;
+  max-width: 350px;
 }
 
 .shared-files-header {

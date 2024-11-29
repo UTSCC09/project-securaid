@@ -52,27 +52,40 @@
 
 .auth-button {
   flex: 1;
-  padding: 12px 20px;
+  padding: 5px 10px;
   font-size: 16px;
   font-weight: bold;
   color: white;
   background-color: var(--orange);
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: 25px;
   cursor: pointer;
   transition: all 0.3s ease;
   max-height: fit-content;
+}
+.auth-button-google{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 5px 10px;
+  background-color: var(--font_colour);
+  color: darkslategray;
+  border: 2px solid darkslategray;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+.auth-button-google:hover{
+  background-color: rgba(0, 0, 0, 0.7);
+  color: var(--orange);
+  border: 2px solid var(--orange);
+  transition: all 0.3s ease;
 }
 
 .auth-button:hover {
   background-color: rgba(0, 0, 0, 0.7);
   color: var(--orange);
   border: 2px solid var(--orange);
-}
-
-.auth-button:focus {
-  outline: none;
-  box-shadow: 0px 0px 5px rgba(255, 165, 0, 0.5);
 }
 
 .error {

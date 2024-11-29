@@ -224,7 +224,8 @@ export function SharedFilesComponent({ username }) {
               className="shared-file-item"
             >
               <div className="file-details">
-                <div>File Name: {file.fileName}</div>
+                <div>File Name: {file.fileName.split("_").slice(1).join("_") ||
+                          file.fileName}{" "}</div>
                 <div>Shared By: {file.sharedBy}</div>
                 <div>Expires At: {formatTime(expiresAt)}</div>
               </div>
