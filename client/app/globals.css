@@ -31,8 +31,7 @@ body::before {
   background-image: url("../public/Shockwave.jpeg");
   background-size: cover;
   background-position: center;
-  filter: blur(20px); /* Adjust the blur value here */
-  z-index: -1; /* Ensure it stays behind the content */
+  z-index: -1;
 }
 #homepage_title {
   font: 75px var(--font_Playfair);

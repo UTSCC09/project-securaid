@@ -1,7 +1,6 @@
 #content_container{
     display: flex;
     gap: 25px;
-    backdrop-filter: blur(30px);
     border-radius: 25px;
     background-color: #171717;
     padding: 25px;
