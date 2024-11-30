@@ -13,10 +13,6 @@ services:
       # - ./certs:/etc/nginx/certs
       # - ./vhost:/etc/nginx/vhost.d
       # - ./html:/usr/share/nginx/html
-    environment:
-      - DEFAULT_HOST=${FRONTEND_DOMAIN}
-    networks:
-      - web
 
   # nginx-proxy-acme:
   #   image: nginxproxy/acme-companion
@@ -31,8 +27,6 @@ services:
   #     - ./acme:/etc/acme.sh
   #   environment:
   #     - DEFAULT_EMAIL=securaid.otp@gmail.com
-  #   networks:
-  #     - web
 
   frontend:
     image: securaid-frontend
