@@ -23,12 +23,11 @@ export function LoginComponent(props) {
     const username = params.get("username");
 
     if (username) {
-      onLogin(username); // Update state with the logged-in user
+      onLogin(username);
       enqueueSnackbar("Logged in successfully with Google!", {
         variant: "success",
       });
 
-      // Clean up the URL
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }

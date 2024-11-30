@@ -103,12 +103,12 @@ export function FilesUploadedNavBar({
             enqueueSnackbar(`No files remaining in project. Project deleted.`, {
               variant: "success",
             });
-            fetchProjects(); // Refresh the list of projects
+            fetchProjects(); // refresh projects
           } else {
             enqueueSnackbar(`Error deleting project.`, { variant: "error" });
           }
         } else {
-          // Project still exists, refresh its files
+          // project still exists, refresh its files
           await fetchFiles(projectId);
           enqueueSnackbar(`File delete successfully!`, { variant: "success" });
         }
@@ -123,7 +123,7 @@ export function FilesUploadedNavBar({
     }
   };
 
-  // View scan results
+  // button clicked to view scan results
   const handleViewResults = async (scanId) => {
     try {
       console.log("Fetching VirusTotal results for scanId:", scanId);
@@ -133,7 +133,7 @@ export function FilesUploadedNavBar({
       );
       if (response.ok) {
         const result = await response.json();
-        onViewResults(result); // Pass results to parent component
+        onViewResults(result);
       } else {
         console.error("Failed to fetch scan results");
       }
@@ -142,7 +142,7 @@ export function FilesUploadedNavBar({
     }
   };
 
-  // Toggle project expansion with fetch if not already expanded
+  // project explansion toggle
   const toggleProjectExpansion = (projectId) => {
     if (expandedProjects.includes(projectId)) {
       setExpandedProjects((prev) => prev.filter((id) => id !== projectId));
@@ -193,8 +193,7 @@ export function FilesUploadedNavBar({
                         size={30}
                         color="white"
                         onClick={() => {
-                          console.log("File details:", file); // Add this log
-                          handleViewResults(file.scanId); // Ensure `file.scanId` exists here
+                          handleViewResults(file.scanId);
                         }}
                       />
                       <RiDeleteBin6Line

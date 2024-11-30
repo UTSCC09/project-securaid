@@ -143,7 +143,7 @@ async function connectToDatabase() {
         body("password").isString().trim().isLength({ min: 6 }).escape(),
         body("email").isEmail().normalizeEmail(),
       ],
-      validateRequest, // This middleware checks validation results
+      validateRequest,
       async (req, res) => {
         try {
           const { username, password, email } = req.body;
@@ -188,7 +188,7 @@ async function connectToDatabase() {
             const params = {
               Bucket: process.env.AWS_S3_BUCKET_NAME,
               Key: key,
-              Expires: 60, // Expiry time in seconds
+              Expires: 60,
               ContentType: file.contentType,
             };
             return s3.getSignedUrlPromise("putObject", params).then((url) => ({
@@ -297,9 +297,9 @@ async function connectToDatabase() {
         failureRedirect: "http://securaid.mywire.org",
       }),
       (req, res) => {
-        const user = req.user; // Get the authenticated user
-        // Store user ID in the session
-        req.session.userId = user._id; // Assuming MongoDB ObjectId
+        const user = req.user;
+
+        req.session.userId = user._id;
         console.log("Session userId set:", req.session.userId);
 
         res.redirect(`http://securaid.mywire.org?username=${user.username}`);
@@ -389,7 +389,6 @@ async function connectToDatabase() {
         try {
           const { folderName, uploadedLinks, userId, ownership } = req.body;
 
-          // Check if the project already exists
           const project = await database
             .collection("projects")
             .findOne({ folderName, userId });
@@ -398,7 +397,6 @@ async function connectToDatabase() {
           if (project) {
             projectId = project._id;
           } else {
-            // Insert a new project if it doesn't exist
             const insertResult = await database
               .collection("projects")
               .insertOne({
@@ -410,18 +408,16 @@ async function connectToDatabase() {
             projectId = insertResult.insertedId;
           }
 
-          // Add `scanId` to each file document
           const fileDocuments = uploadedLinks.map((file) => ({
             projectId,
             userId,
             filename: file.filename,
             url: file.url,
-            scanId: file.scanId, // Include scanId
+            scanId: file.scanId,
             ownership,
             createdAt: new Date(),
           }));
 
-          // Save the file documents
           await database.collection("files").insertMany(fileDocuments);
 
           res.status(201).json({
@@ -443,7 +439,6 @@ async function connectToDatabase() {
           return res.status(400).json({ error: "User ID is required." });
         }
 
-        // Fetch projects by userId
         const projects = await projectCollection
           .find({ userId: userId })
           .sort({ createdAt: -1 })
@@ -489,10 +484,8 @@ async function connectToDatabase() {
           return res.status(400).json({ error: "File ID is required." });
         }
 
-        // Convert fileId to ObjectId
         const fileObject = new ObjectId(fileId);
 
-        // Find and delete the file
         const file = await filesCollection.findOne({ _id: fileObject });
         if (!file) {
           console.log("----> File not found");
@@ -501,7 +494,6 @@ async function connectToDatabase() {
 
         await filesCollection.deleteOne({ _id: fileObject });
 
-        // Check if the project has remaining files
         const remainingFiles = await filesCollection
           .find({ projectId: file.projectId })
           .toArray();
@@ -535,12 +527,10 @@ async function connectToDatabase() {
           return res.status(400).json({ error: "Project ID is required." });
         }
 
-        // Delete all files associated with the project
         await filesCollection.deleteMany({
           projectId: new ObjectId(projectId),
         });
 
-        // Delete the project
         await projectCollection.deleteOne({ _id: new ObjectId(projectId) });
 
         res.status(200).json({
@@ -574,7 +564,6 @@ async function connectToDatabase() {
             .json({ error: "User ID and Project ID are required." });
         }
 
-        // Fetch files by userId and projectId
         const files = await filesCollection
           .find({ userId: userId, projectId: new ObjectId(projectId) })
           .sort({ createdAt: -1 })
@@ -604,15 +593,13 @@ async function connectToDatabase() {
       try {
         const { sharedTo, sharedBy, fileName, expiryTime, fileUrl } = req.body;
 
-        // Validate input
         if (!sharedTo || !sharedBy || !fileName || !expiryTime || !fileUrl) {
           return res.status(400).json({ error: "All fields are required." });
         }
 
-        // Create the shared file document
         const sharedFile = {
-          sharedTo, // Username of the recipient
-          sharedBy, // Username of the sharer
+          sharedTo,
+          sharedBy,
           fileName,
           expiryTime,
           fileUrl,
@@ -641,11 +628,11 @@ async function connectToDatabase() {
         const sharedFiles = await sharedFilesCollection
           .find({ sharedTo: username })
           .toArray();
-        console.log("Shared files fetched:", sharedFiles); // Debug log
+        //console.log("Shared files fetched:", sharedFiles);
 
         res.status(200).json({ sharedFiles });
       } catch (error) {
-        console.error("Error in shared files endpoint:", error); // Debug log
+        console.error("Error in shared files endpoint:", error);
         res.status(500).json({ error: "Failed to fetch shared files." });
       }
     });
@@ -676,7 +663,7 @@ async function connectToDatabase() {
         res.status(500).json({ message: "Failed to send OTP." });
       }
     });
-
+    // code was adapted from chatgpt to set up nodemailer otp generation and verification. Link in credits page
     app.post("/api/verify-otp", (req, res) => {
       const { email, otp } = req.body;
 

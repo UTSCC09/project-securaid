@@ -12,11 +12,12 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [expiryHours, setExpiryHours] = useState(""); // Expiry time (hours)
-  const [expiryMinutes, setExpiryMinutes] = useState(""); // Expiry time (minutes)
+  const [expiryHours, setExpiryHours] = useState("");
+  const [expiryMinutes, setExpiryMinutes] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-  // Fetch projects associated with the user
+
+  //get projects of user from backend
   const fetchProjects = async () => {
     try {
       const response = await fetch(
@@ -89,7 +90,6 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
     fetchAllUsers();
   }, []);
 
-  // Toggle the expansion state of a project
   const toggleProjectExpansion = (projectId) => {
     setExpandedProjects((prev) =>
       prev.includes(projectId)
@@ -98,7 +98,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
     );
   };
 
-  // Handle file and user sharing
+  // Handle file sharing w other users
   const handleShare = async () => {
     if (selectedFiles.length === 0 || selectedUsers.length === 0) {
       enqueueSnackbar(`Please select at least one file and one user.`, {
