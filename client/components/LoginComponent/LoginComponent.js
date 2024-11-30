@@ -13,9 +13,9 @@ export function LoginComponent(props) {
   const usernameRef = useRef(null);
   const emailRef = useRef(null);
   const signUpPasswordRef = useRef(null);
-
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const handleGoogleSignIn = () => {
-    window.location.href = "http://securaid.mywire.org/auth/google";
+    window.location.href = `${backendUrl}/auth/google`;
   };
 
   useEffect(() => {
