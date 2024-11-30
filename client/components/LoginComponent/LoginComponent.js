@@ -18,6 +18,7 @@ export function LoginComponent(props) {
     window.location.href = `http://securaid.mywire.org:4000/auth/google`;
   };
 
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const username = params.get("username");

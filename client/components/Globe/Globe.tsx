@@ -13,36 +13,35 @@ const GLOBE_CONFIG: COBEOptions = {
   devicePixelRatio: 2,
   phi: 0,
   theta: 0.3,
-  dark: 0.8, // Adds darkness to the globe for a more space-like feel
-  diffuse: 0.4,
+  dark: 1, // Slightly lighter for a balanced look
+  diffuse: 0.6, // Enhances detail visibility
   mapSamples: 16000,
-  mapBrightness: 4,
+  mapBrightness: 3, // Makes the globe dots more visible
 
-  // Dark Grey/Black Globe
-  baseColor: [0.1, 0.1, 0.1], // Dark grey (can adjust to [0, 0, 0] for black)
+  // Soft neutral base color for the globe
+  baseColor: [0.9, 0.9, 0.9], // Light gray for the globe
 
-  // Orange Glow
-  glowColor: [1, 0.4, 0], // Orange glow
+  // Warm orange glow
+  glowColor: [1, 0.6, 0.2], // Soft orange glow
 
-  // Keep marker colors as you had them before, or adjust if needed
-  markerColor: [251 / 255, 100 / 255, 21 / 255], // Orange marker color
+  // Bright orange markers for highlighted points
+  markerColor: [1, 0.5, 0], // Bright orange marker color
 
+  // Markers for specific locations
   markers: [
-    { location: [14.5995, 120.9842], size: 0.03 }, // Manila, Philippines
-    { location: [19.076, 72.8777], size: 0.1 }, // Mumbai, India
-    { location: [23.8103, 90.4125], size: 0.05 }, // Dhaka, Bangladesh
-    { location: [30.0444, 31.2357], size: 0.07 }, // Cairo, Egypt
-    { location: [39.9042, 116.4074], size: 0.08 }, // Beijing, China
-    { location: [-23.5505, -46.6333], size: 0.1 }, // São Paulo, Brazil
-    { location: [19.4326, -99.1332], size: 0.1 }, // Mexico City, Mexico
-    { location: [40.7128, -74.006], size: 0.1 }, // New York City, USA
-    { location: [34.6937, 135.5022], size: 0.05 }, // Osaka, Japan
-    { location: [41.0082, 28.9784], size: 0.06 }, // Istanbul, Turkey
-
-    // Additional markers:
-    { location: [48.8566, 2.3522], size: 0.08 }, // Paris, France
-    { location: [51.5074, -0.1278], size: 0.09 }, // London, UK
-    { location: [55.7558, 37.6173], size: 0.07 }, // Moscow, Russia
+    { location: [14.5995, 120.9842], size: 0.03 },  // Manila, Philippines
+    { location: [19.076, 72.8777], size: 0.1 },     // Mumbai, India
+    { location: [23.8103, 90.4125], size: 0.05 },   // Dhaka, Bangladesh
+    { location: [30.0444, 31.2357], size: 0.07 },   // Cairo, Egypt
+    { location: [39.9042, 116.4074], size: 0.08 },  // Beijing, China
+    { location: [-23.5505, -46.6333], size: 0.1 },  // São Paulo, Brazil
+    { location: [19.4326, -99.1332], size: 0.1 },   // Mexico City, Mexico
+    { location: [40.7128, -74.006], size: 0.1 },    // New York City, USA
+    { location: [34.6937, 135.5022], size: 0.05 },  // Osaka, Japan
+    { location: [41.0082, 28.9784], size: 0.06 },   // Istanbul, Turkey
+    { location: [48.8566, 2.3522], size: 0.08 },    // Paris, France
+    { location: [51.5074, -0.1278], size: 0.09 },   // London, UK
+    { location: [55.7558, 37.6173], size: 0.07 },   // Moscow, Russia
     { location: [-33.8688, 151.2093], size: 0.06 }, // Sydney, Australia
     { location: [34.0522, -118.2437], size: 0.1 }, // Los Angeles, USA
     { location: [52.52, 13.405], size: 0.08 }, // Berlin, Germany
@@ -53,6 +52,9 @@ const GLOBE_CONFIG: COBEOptions = {
     { location: [43.65107, -79.347015], size: 0.15 }, // Toronto, Canada   // Tokyo, Japan
   ],
 };
+
+
+
 
 export function Globe({
   className,
