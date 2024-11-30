@@ -5,6 +5,8 @@ import { Globe } from "../components/Globe/Globe";
 import { HyperText } from "../components/HyperText/HyperText";
 import { LoginComponent } from "../components/LoginComponent/LoginComponent";
 import { SnackbarProvider } from "notistack";
+import Link from "next/link";
+
 import {
   handleSignin,
   handleSignout,
@@ -85,6 +87,13 @@ function Page() {
             </div>
           </>
         )}
+      </div>
+      <div style={{ marginTop: "440px" }}>
+        <Link href="/credits">
+          <button style={{ padding: "10px 20px", cursor: "pointer" }}>
+            Credits
+          </button>
+        </Link>
       </div>
     </SnackbarProvider>
   );
