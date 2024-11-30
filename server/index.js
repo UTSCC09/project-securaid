@@ -8,14 +8,31 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const nodemailer = require("nodemailer");
 const { body, param, query, validationResult } = require("express-validator");
+const AWS = require("aws-sdk");
+const fetch = require("node-fetch");
+const FormData = require("form-data");
+const path = require("path");
+const dotenv = require("dotenv");
 
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+const env = process.env.NODE_ENV || "development";
+
+const envPath = path.resolve(__dirname, `.env.${env}.local`);
+dotenv.config({ path: envPath });
+
+console.log(`Environment loaded from: ${env}`);
 
 const app = express();
 const PORT = 4000;
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: [process.env.FRONTEND_URL],
     credentials: true,
   })
 );
@@ -39,16 +56,11 @@ app.use(
   })
 );
 
-
-
-
 // MongoDB connection setup
 const client = new MongoClient(process.env.MONGODB_URI);
 let usersCollection;
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-
-
 
 // Configure Passport
 passport.use(
@@ -56,7 +68,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:4000/auth/google/callback",
+      callbackURL: "http://securaid.mywire.org/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -141,7 +153,8 @@ async function connectToDatabase() {
           });
           if (existingUser) {
             return res.status(409).json({
-              message: "Username or email already exists. Please choose a different one.",
+              message:
+                "Username or email already exists. Please choose a different one.",
             });
           }
 
@@ -150,13 +163,128 @@ async function connectToDatabase() {
           const user = { username, password: hashedPassword, email };
           const insertResult = await usersCollection.insertOne(user);
 
-          res.json({ message: "User registered successfully.", userId: insertResult.insertedId });
+          res.json({
+            message: "User registered successfully.",
+            userId: insertResult.insertedId,
+          });
         } catch (error) {
           console.error("Error inserting user:", error);
           res.status(500).json({ message: "Error inserting user" });
         }
       }
     );
+
+    app.post("/api/upload", async (req, res) => {
+      const { folderName, files } = req.body;
+
+      if (!folderName || !files || files.length === 0) {
+        return res.status(400).json({ error: "Invalid input data." });
+      }
+
+      try {
+        const uploadUrls = await Promise.all(
+          files.map((file) => {
+            const key = `${folderName}/${file.filename}`;
+            const params = {
+              Bucket: process.env.AWS_S3_BUCKET_NAME,
+              Key: key,
+              Expires: 60, // Expiry time in seconds
+              ContentType: file.contentType,
+            };
+            return s3.getSignedUrlPromise("putObject", params).then((url) => ({
+              key,
+              url,
+            }));
+          })
+        );
+
+        res.status(200).json(uploadUrls);
+      } catch (error) {
+        console.error("Error generating upload URLs:", error);
+        res.status(500).json({ error: "Failed to generate upload URLs." });
+      }
+    });
+
+    app.post("/api/virustotal-scan", async (req, res) => {
+      const { s3Url } = req.body;
+
+      if (!s3Url) {
+        return res.status(400).json({ error: "Missing s3Url." });
+      }
+
+      try {
+        const fileKey = decodeURIComponent(
+          new URL(s3Url).pathname.substring(1)
+        );
+        const fileStream = s3
+          .getObject({
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: fileKey,
+          })
+          .createReadStream();
+
+        const formData = new FormData();
+        formData.append("file", fileStream, fileKey);
+
+        const response = await fetch(
+          "https://www.virustotal.com/api/v3/files",
+          {
+            method: "POST",
+            headers: {
+              "x-apikey": process.env.VIRUSTOTAL_API_KEY,
+              ...formData.getHeaders(),
+            },
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`VirusTotal error: ${errorText}`);
+        }
+
+        const { data } = await response.json();
+        res.status(200).json({ scanId: data.id });
+      } catch (error) {
+        console.error("Error in VirusTotal scan:", error);
+        res
+          .status(500)
+          .json({ error: error.message || "Failed to scan file." });
+      }
+    });
+
+    app.get("/api/virustotal-results", async (req, res) => {
+      const { scanId } = req.query;
+
+      if (!scanId) {
+        return res.status(400).json({ error: "Missing scanId." });
+      }
+
+      try {
+        console.log(`Fetching results for scanId: ${scanId}`); // Log the scanId
+        const response = await fetch(
+          `https://www.virustotal.com/api/v3/analyses/${scanId}`,
+          {
+            method: "GET",
+            headers: { "x-apikey": process.env.VIRUSTOTAL_API_KEY },
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("VirusTotal API Error Response:", errorText);
+          throw new Error("Failed to fetch VirusTotal results.");
+        }
+
+        const result = await response.json();
+        res.status(200).json(result);
+      } catch (error) {
+        console.error("Error fetching VirusTotal results:", error);
+        res
+          .status(500)
+          .json({ error: error.message || "Failed to fetch results." });
+      }
+    });
 
     app.get(
       "/auth/google",
@@ -165,38 +293,26 @@ async function connectToDatabase() {
 
     app.get(
       "/auth/google/callback",
-      passport.authenticate("google", { failureRedirect: "http://localhost:3000" }),
+      passport.authenticate("google", {
+        failureRedirect: "http://securaid.mywire.org",
+      }),
       (req, res) => {
         const user = req.user; // Get the authenticated user
         // Store user ID in the session
         req.session.userId = user._id; // Assuming MongoDB ObjectId
         console.log("Session userId set:", req.session.userId);
 
-        res.redirect(`http://localhost:3000?username=${user.username}`);
+        res.redirect(`http://securaid.mywire.org?username=${user.username}`);
       }
     );
 
-
-
     app.get("/auth/logout", (req, res) => {
       req.logout((err) => {
-        if (err) {
-          console.error("Error during logout:", err);
-          return res.status(500).json({ message: "Error during logout" });
-        }
-
-        req.session.destroy((err) => {
-          if (err) {
-            console.error("Failed to destroy session:", err);
-            return res.status(500).json({ message: "Failed to destroy session" });
-          }
-
-          res.clearCookie("connect.sid");
-          res.status(200).json({ message: "Logged out successfully" });
-        });
+        if (err) return res.status(500).json({ error: "Logout failed" });
+        res.clearCookie("session");
+        res.redirect("http://securaid.mywire.org");
       });
     });
-
 
 
     app.get("/api/all-users", async (req, res) => {
@@ -211,9 +327,7 @@ async function connectToDatabase() {
 
     app.get(
       "/api/user/:username",
-      [
-        param("username").isString().trim().escape(),
-      ],
+      [param("username").isString().trim().escape()],
       validateRequest,
       ensureAuthenticated,
       async (req, res) => {
@@ -276,33 +390,45 @@ async function connectToDatabase() {
         try {
           const { folderName, uploadedLinks, userId, ownership } = req.body;
 
-          const project = await database.collection("projects").findOne({ folderName, userId });
+          // Check if the project already exists
+          const project = await database
+            .collection("projects")
+            .findOne({ folderName, userId });
 
           let projectId;
           if (project) {
             projectId = project._id;
           } else {
-            const insertResult = await database.collection("projects").insertOne({
-              folderName,
-              userId,
-              ownership,
-              createdAt: new Date(),
-            });
+            // Insert a new project if it doesn't exist
+            const insertResult = await database
+              .collection("projects")
+              .insertOne({
+                folderName,
+                userId,
+                ownership,
+                createdAt: new Date(),
+              });
             projectId = insertResult.insertedId;
           }
 
+          // Add `scanId` to each file document
           const fileDocuments = uploadedLinks.map((file) => ({
             projectId,
             userId,
             filename: file.filename,
             url: file.url,
+            scanId: file.scanId, // Include scanId
             ownership,
             createdAt: new Date(),
           }));
 
+          // Save the file documents
           await database.collection("files").insertMany(fileDocuments);
 
-          res.status(201).json({ message: "Project and files created successfully.", projectId });
+          res.status(201).json({
+            message: "Project and files created successfully.",
+            projectId,
+          });
         } catch (error) {
           console.error("Error processing request:", error);
           res.status(500).json({ message: "Error processing request." });

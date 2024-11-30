@@ -10,14 +10,14 @@ import {
   handleSignout,
   handleSignup,
 } from "../src/utils/route.js";
-
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 function Page() {
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchUsername() {
       try {
-        const response = await fetch("http://localhost:4000/api/protected", {
+        const response = await fetch(`${backendUrl}/api/protected`, {
           method: "GET",
           credentials: "include",
         });
@@ -34,59 +34,58 @@ function Page() {
 
   return (
     <SnackbarProvider maxSnack={5} autoHideDuration={2500}>
+      <div style={{ position: "relative" }}>
+        <h1 id="homepage_title">Securaid</h1>
+        <h4 id="homepage_slogan">A secure place for everyone</h4>
 
-    <div style={{ position: "relative" }}>
-      <h1 id="homepage_title">Securaid</h1>
-      <h4 id="homepage_slogan">A secure place for everyone</h4>
-
-      {username ? (
-        <>
-          <div id="signed-in-bar">
-            <div id="welcome-message">
-              <HyperText
-                text={`Welcome ${username}`}
-                duration={2000}
-                className="text-6xl font-semibold text-orange"
-                animateOnLoad={true}
+        {username ? (
+          <>
+            <div id="signed-in-bar">
+              <div id="welcome-message">
+                <HyperText
+                  text={`Welcome ${username}`}
+                  duration={2000}
+                  className="text-6xl font-semibold text-orange"
+                  animateOnLoad={true}
+                />
+              </div>
+              <button
+                className="sign-out-button"
+                id="sign-out-button"
+                onClick={() => handleSignout(() => setUsername(null))}
+              >
+                Sign Out
+              </button>
+            </div>
+            <div id="container">
+              {/* Pass username to ContentComponent */}
+              <ContentComponent username={username} />
+            </div>
+          </>
+        ) : (
+          <>
+            <div id="loginComponent">
+              <LoginComponent
+                signup={handleSignup}
+                signin={handleSignin}
+                onLogin={setUsername}
               />
             </div>
-            <button
-              className="sign-out-button"
-              id="sign-out-button"
-              onClick={() => handleSignout(() => setUsername(null))}
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 20px)",
+                left: 0,
+                width: "100%",
+                height: "400px",
+                zIndex: -1,
+              }}
             >
-              Sign Out
-            </button>
-          </div>
-          <div id="container">
-            {/* Pass username to ContentComponent */}
-            <ContentComponent username={username} />
-          </div>
-        </>
-      ) : (
-        <>
-          <div id="loginComponent">
-            <LoginComponent
-              signup={handleSignup}
-              signin={handleSignin}
-              onLogin={setUsername}
-            />
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              top: "calc(100% + 20px)",
-              left: 0,
-              width: "100%",
-              height: "400px",
-              zIndex: -1,
-            }}
-          >
-            <Globe className="globe" />
-          </div>
-        </>
-      )}
-    </div>
+              <Globe className="globe" />
+            </div>
+          </>
+        )}
+      </div>
     </SnackbarProvider>
   );
 }
