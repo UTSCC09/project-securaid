@@ -19,7 +19,7 @@ function Page() {
   useEffect(() => {
     async function fetchUsername() {
       try {
-        const response = await fetch(`${backendUrl}/api/protected`, {
+        const response = await fetch(`${backendUrl}/protected`, {
           method: "GET",
           credentials: "include",
         });
