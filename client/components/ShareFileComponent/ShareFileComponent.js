@@ -5,7 +5,6 @@ import { MdOutlineAddBox } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import "./ShareFileComponent.css";
 
-
 export function ShareFileComponent({ userId, refreshTrigger }) {
   const [projects, setProjects] = useState([]);
   const [filesByProject, setFilesByProject] = useState({});
@@ -16,12 +15,12 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
   const [expiryHours, setExpiryHours] = useState(""); // Expiry time (hours)
   const [expiryMinutes, setExpiryMinutes] = useState(""); // Expiry time (minutes)
   const { enqueueSnackbar } = useSnackbar();
-
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   // Fetch projects associated with the user
   const fetchProjects = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/projects?userId=${userId}`,
+        `${backendUrl}/api/projects?userId=${userId}`,
         {
           method: "GET",
           headers: {
@@ -45,7 +44,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
   const fetchFiles = async (projectId) => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/files?userId=${userId}&projectId=${projectId}`,
+        `${backendUrl}/api/files?userId=${userId}&projectId=${projectId}`,
         {
           method: "GET",
           headers: {
@@ -70,7 +69,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
 
   const fetchAllUsers = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/all-users", {
+      const response = await fetch(`${backendUrl}/api/all-users`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -102,18 +101,16 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
   // Handle file and user sharing
   const handleShare = async () => {
     if (selectedFiles.length === 0 || selectedUsers.length === 0) {
-      enqueueSnackbar(
-        `Please select at least one file and one user.`,
-        { variant: "warning" }
-      );
+      enqueueSnackbar(`Please select at least one file and one user.`, {
+        variant: "warning",
+      });
       return;
     }
 
     if (!expiryHours || !expiryMinutes) {
-      enqueueSnackbar(
-        `Please specify expiry hours and minutes.`,
-        { variant: "warning" }
-      );
+      enqueueSnackbar(`Please specify expiry hours and minutes.`, {
+        variant: "warning",
+      });
       return;
     }
 
@@ -123,7 +120,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
     try {
       for (const user of selectedUsers) {
         for (const file of selectedFiles) {
-          const response = await fetch("http://localhost:4000/api/share-file", {
+          const response = await fetch(`${backendUrl}/api/share-file`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -137,7 +134,10 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
 
           if (response.ok) {
             successes.push(
-              `File "${file.filename.split("_").slice(1).join("_")} shared with ${user.username}`
+              `File "${file.filename
+                .split("_")
+                .slice(1)
+                .join("_")} shared with ${user.username}`
             );
           } else {
             const { error } = await response.json();
@@ -151,22 +151,14 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
       // Summarize results in a single alert
       if (successes.length > 0) {
         for (const success of successes) {
-          enqueueSnackbar(
-            success,
-            { variant: "success" }
-          );
+          enqueueSnackbar(success, { variant: "success" });
         }
       }
       if (failures.length > 0) {
         for (const failure of failures) {
-          enqueueSnackbar(
-            failure,
-            { variant: "error" }
-          );
+          enqueueSnackbar(failure, { variant: "error" });
         }
       }
-
-
     } catch (error) {
       console.error("Error sharing files:", error);
       enqueueSnackbar(

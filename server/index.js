@@ -10,8 +10,9 @@ const nodemailer = require("nodemailer");
 const { body, param, query, validationResult } = require("express-validator");
 const AWS = require("aws-sdk");
 const fetch = require("node-fetch");
-const { S3 } = require("aws-sdk");
 const FormData = require("form-data");
+const path = require("path");
+const dotenv = require("dotenv");
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -19,12 +20,19 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION,
 });
 
+const env = process.env.NODE_ENV || "development";
+
+const envPath = path.resolve(__dirname, `.env.${env}.local`);
+dotenv.config({ path: envPath });
+
+console.log(`Environment loaded from: ${env}`);
+
 const app = express();
 const PORT = 4000;
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: [process.env.FRONTEND_URL],
     credentials: true,
   })
 );

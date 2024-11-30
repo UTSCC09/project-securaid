@@ -16,7 +16,7 @@ export function FilesUploadedNavBar({
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
 
-  const backendUrl = "http://localhost:4000";
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   // Fetch projects from the backend
   const fetchProjects = async () => {

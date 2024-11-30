@@ -16,7 +16,7 @@ export function UploadContentComponent({
   const [folderName, setFolderName] = useState("");
   const [uploadedLinks, setUploadedLinks] = useState([]);
 
-  const backendUrl = "http://localhost:4000";
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   // const checkImageMetadata = async (file) => {
   //   const arrayBuffer = await file.arrayBuffer();

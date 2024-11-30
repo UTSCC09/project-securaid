@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  backend:
+    image: securaid-backend
+    container_name: securaid-backend
+    expose:
+      - "4000"
+
+  frontend:
+    image: securaid-frontend
+    container_name: securaid-frontend
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:latest
+    container_name: securaid-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+
+networks:
+  default:
+    driver: bridge

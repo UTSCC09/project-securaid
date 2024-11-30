@@ -24,14 +24,15 @@ export function LoginComponent(props) {
 
     if (username) {
       onLogin(username); // Update state with the logged-in user
-      enqueueSnackbar("Logged in successfully with Google!", { variant: "success" });
+      enqueueSnackbar("Logged in successfully with Google!", {
+        variant: "success",
+      });
 
       // Clean up the URL
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
   }, [onLogin, enqueueSnackbar]);
-
 
   const extractErrorMessage = (error) => {
     try {
@@ -42,7 +43,6 @@ export function LoginComponent(props) {
     }
   };
 
-
   const handleSignIn = (e) => {
     e.preventDefault();
     const usernameOrEmail = usernameOrEmailRef.current.value;
@@ -51,7 +51,8 @@ export function LoginComponent(props) {
     signin(
       usernameOrEmail,
       password,
-      (error) => enqueueSnackbar(extractErrorMessage(error), { variant: "error" }),
+      (error) =>
+        enqueueSnackbar(extractErrorMessage(error), { variant: "error" }),
       (username) => {
         onLogin(username);
         enqueueSnackbar("Logged in successfully!", { variant: "success" });
@@ -70,7 +71,8 @@ export function LoginComponent(props) {
       username,
       password,
       email,
-      (error) => enqueueSnackbar(extractErrorMessage(error), { variant: "error" }),
+      (error) =>
+        enqueueSnackbar(extractErrorMessage(error), { variant: "error" }),
       (data) => {
         enqueueSnackbar(data.message, { variant: "success" });
         e.target.reset();

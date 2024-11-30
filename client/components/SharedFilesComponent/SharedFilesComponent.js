@@ -25,7 +25,7 @@ export function SharedFilesComponent({ username }) {
       day: "numeric",
     });
   };
-
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const isExpired = (expiresAt) => {
     const now = new Date();
     return new Date(expiresAt) < now;
@@ -45,7 +45,7 @@ export function SharedFilesComponent({ username }) {
 
     try {
       const response = await fetch(
-        `http://localhost:4000/api/shared-files?username=${username}`
+        `${backendUrl}/api/shared-files?username=${username}`
       );
 
       if (response.ok) {
@@ -72,7 +72,7 @@ export function SharedFilesComponent({ username }) {
   const handleDelete = async (fileId) => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/delete-shared-file/${fileId}`,
+        `${backendUrl}/api/delete-shared-file/${fileId}`,
         {
           method: "DELETE",
         }
@@ -99,7 +99,7 @@ export function SharedFilesComponent({ username }) {
   const requestOtp = async (email) => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:4000/api/generate-otp", {
+      const response = await fetch(`${backendUrl}/api/generate-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -125,14 +125,11 @@ export function SharedFilesComponent({ username }) {
 
   const handleView = async (file) => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/user/${username}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${backendUrl}/api/user/${username}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch user email.");
@@ -154,7 +151,7 @@ export function SharedFilesComponent({ username }) {
 
   const verifyOtp = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/verify-otp", {
+      const response = await fetch(`${backendUrl}/api/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: currentEmail, otp }),
