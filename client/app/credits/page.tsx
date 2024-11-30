@@ -54,6 +54,15 @@ function Credits() {
             ChatGPT used for Nodemailer's OTP functionality
           </a>
         </li>
+        <li>
+          <a
+            href="https://chatgpt.com/share/674b7f09-82b0-8005-9076-1287cf50e538"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ChatGPT used for integrating https with nginx.conf
+          </a>
+        </li>
       </ul>
       <p>
         <Link href="/">

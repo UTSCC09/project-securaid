@@ -1,29 +1,42 @@
-version: "3.8"
+#Adapted code from chatgpt to set up https using lets encrypt and certbot (see credits)
+
+version: "3.7"
 
 services:
+  nginx:
+    image: nginx:latest
+    container_name: securaid-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443" # Expose HTTPS
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/conf:/etc/letsencrypt # For Let's Encrypt certificates
+      - ./certbot/www:/var/www/certbot # For certificate challenge
+    depends_on:
+      - backend
+      - frontend
+
   backend:
     image: securaid-backend
     container_name: securaid-backend
-    expose:
-      - "4000"
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
 
   frontend:
     image: securaid-frontend
     container_name: securaid-frontend
-    expose:
-      - "3000"
-
-  nginx:
-    image: nginx:latest
-    container_name: securaid-nginx
+    restart: always
     ports:
-      - "80:80"
-    depends_on:
-      - backend
-      - frontend
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - "3000:3000"
 
-networks:
-  default:
-    driver: bridge
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
