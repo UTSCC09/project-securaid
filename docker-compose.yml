@@ -1,47 +1,29 @@
+version: "3.8"
+
 services:
-  # nginx reverse proxy
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    container_name: nginx-proxy
-    restart: always
-    ports:
-      - "80:80"
-      # - "443:443"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./certs:/etc/nginx/certs
-      - ./vhost:/etc/nginx/vhost.d
-      - ./html:/usr/share/nginx/html
-
-  # reverse proxy let's encrypt companion
-  # nginx-proxy-acme:
-  #   image: nginxproxy/acme-companion
-  #   container_name: nginx-proxy-acme
-  #   restart: always
-  #   volumes_from:
-  #     - nginx-proxy
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - ./acme:/etc/acme.sh
-  #   environment:
-  #       - DEFAULT_EMAIL=thierry.sans@gmail.com
-
-  # React frontend
-  frontend:
-    image: securaid-frontend
-    container_name: securaid-frontend
-    restart: always
-    # certificate information for let's encrypt
-    environment:
-      - VIRTUAL_HOST=${FRONTEND_DOMAIN}
-      # - LETSENCRYPT_HOST=${FRONTEND_DOMAIN}
-
-  # react backend
   backend:
     image: securaid-backend
     container_name: securaid-backend
-    restart: always
-    # certificate information for let's encrypt
-    environment:
-      - VIRTUAL_HOST=${BACKEND_DOMAIN}
-      # - LETSENCRYPT_HOST=${BACKEND_DOMAIN}
+    expose:
+      - "4000"
+
+  frontend:
+    image: securaid-frontend
+    container_name: securaid-frontend
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:latest
+    container_name: securaid-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+
+networks:
+  default:
+    driver: bridge
