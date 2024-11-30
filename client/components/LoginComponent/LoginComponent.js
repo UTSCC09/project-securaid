@@ -15,7 +15,7 @@ export function LoginComponent(props) {
   const signUpPasswordRef = useRef(null);
 
   const handleGoogleSignIn = () => {
-    window.location.href = "http://localhost:4000/auth/google";
+    window.location.href = "http://securaid.mywire.org/auth/google";
   };
 
   useEffect(() => {
