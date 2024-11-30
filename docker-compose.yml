@@ -30,7 +30,7 @@ services:
 
   frontend:
     image: securaid-frontend
-    container_name: securaid-frontend
+    container_name: frontend
     restart: always
     environment:
       - VIRTUAL_HOST=${FRONTEND_DOMAIN}
@@ -39,7 +39,7 @@ services:
 
   backend:
     image: securaid-backend
-    container_name: securaid-backend
+    container_name: backend
     restart: always
     environment:
       - VIRTUAL_HOST=${BACKEND_DOMAIN}

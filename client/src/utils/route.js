@@ -8,7 +8,7 @@ function handleReponse(res) {
 }
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 export function handleSignin(usernameOrEmail, password, fail, success) {
-  fetch(`${backendUrl}/users/login`, {
+  fetch(`${backendUrl}/api/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ usernameOrEmail, password }),
@@ -20,7 +20,7 @@ export function handleSignin(usernameOrEmail, password, fail, success) {
 }
 
 export function handleSignup(username, password, email, fail, success) {
-  fetch(`${backendUrl}/users`, {
+  fetch(`${backendUrl}/api/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password, email }),
@@ -34,7 +34,7 @@ export function handleSignup(username, password, email, fail, success) {
 }
 
 export function handleSignout(success) {
-  fetch(`${backendUrl}/logout`, {
+  fetch(`${backendUrl}/api/logout`, {
     method: "GET",
     credentials: "include",
   })
