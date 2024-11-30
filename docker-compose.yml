@@ -1,42 +1,52 @@
-#Adapted code from chatgpt to set up https using lets encrypt and certbot (see credits)
+version: "3.8"
 
 services:
-  nginx:
-    image: nginx:latest
-    container_name: securaid-nginx
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
     restart: always
     ports:
       - "80:80"
-      - "443:443" # Expose HTTPS
+      # - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./certbot/conf:/etc/letsencrypt # For Let's Encrypt certificates
-      - ./certbot/www:/var/www/certbot # For certificate challenge
-    depends_on:
-      - backend
-      - frontend
-
-  backend:
-    image: securaid-backend
-    container_name: securaid-backend
-    restart: always
-    ports:
-      - "4000:4000"
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      # - ./certs:/etc/nginx/certs
+      # - ./vhost:/etc/nginx/vhost.d
+      # - ./html:/usr/share/nginx/html
     environment:
-      NODE_ENV: production
+      - DEFAULT_HOST=${FRONTEND_DOMAIN}
+    networks:
+      - web
+
+  # nginx-proxy-acme:
+  #   image: nginxproxy/acme-companion
+  #   container_name: nginx-proxy-acme
+  #   restart: always
+  #   depends_on:
+  #     - nginx-proxy
+  #   volumes_from:
+  #     - nginx-proxy
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ./acme:/etc/acme.sh
+  #   environment:
+  #     - DEFAULT_EMAIL=securaid.otp@gmail.com
+  #   networks:
+  #     - web
 
   frontend:
     image: securaid-frontend
     container_name: securaid-frontend
     restart: always
-    ports:
-      - "3000:3000"
+    environment:
+      - VIRTUAL_HOST=${FRONTEND_DOMAIN}
+      - LETSENCRYPT_HOST=${FRONTEND_DOMAIN}
+      - LETSENCRYPT_EMAIL=securaid.otp@gmail.com
 
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: >
-      sh -c "trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew; done"
+  backend:
+    image: securaid-backend
+    container_name: securaid-backend
+    restart: always
+    environment:
+      - VIRTUAL_HOST=${BACKEND_DOMAIN}
+      - LETSENCRYPT_HOST=${BACKEND_DOMAIN}
