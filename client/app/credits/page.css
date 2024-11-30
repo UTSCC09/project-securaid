@@ -1,60 +1,60 @@
 /* Container for credits page */
 .credits-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: #171717;
-  }
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #171717;
+}
 
-  /* Headings */
-  .credits-container h1 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    color: var(--font_color);
-    text-align: center;
-  }
+/* Headings */
+.credits-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: var(--font_color);
+  text-align: center;
+}
 
-  .credits-container p {
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    line-height: 1.6;
-    text-align: center;
-  }
+.credits-container p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  line-height: 1.6;
+  text-align: center;
+}
 
-  /* List of resources */
-  .credits-container ul {
-    list-style-type: none;
-    padding: 0;
-  }
+/* List of resources */
+.credits-container ul {
+  list-style-type: none;
+  padding: 0;
+}
 
-  .credits-container ul li {
-    margin: 10px 0;
-    font-size: 1.2rem;
-  }
+.credits-container ul li {
+  margin: 10px 0;
+  font-size: 1.2rem;
+}
 
-  .credits-container ul li a {
-    color: #0070f3;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s ease;
-  }
+.credits-container ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
 
-  .credits-container ul li a:hover {
-    color: #005bb5;
-  }
+.credits-container ul li a:hover {
+  color: #005bb5;
+}
 
-  /* Back to homepage link */
-  .credits-container p a {
-    color: #0070f3;
-    text-decoration: underline;
-    font-weight: bold;
-    transition: color 0.3s ease;
-  }
+/* Back to homepage link */
+.credits-container p a {
+  color: white;
+  text-decoration: underline;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
 
-  .credits-container p a:hover {
-    color: #005bb5;
-  }
+.credits-container p a:hover {
+  color: var(--orange);
+}
