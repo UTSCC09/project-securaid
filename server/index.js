@@ -294,7 +294,7 @@ async function connectToDatabase() {
     app.get(
       "/auth/google/callback",
       passport.authenticate("google", {
-        failureRedirect: "http://localhost:3000",
+        failureRedirect: "http://securaid.mywire.org",
       }),
       (req, res) => {
         const user = req.user; // Get the authenticated user
@@ -302,26 +302,15 @@ async function connectToDatabase() {
         req.session.userId = user._id; // Assuming MongoDB ObjectId
         console.log("Session userId set:", req.session.userId);
 
-        res.redirect(`http://localhost:3000?username=${user.username}`);
+        res.redirect(`http://securaid.mywire.org?username=${user.username}`);
       }
     );
 
     app.get("/auth/logout", (req, res) => {
       req.logout((err) => {
-        if (err) {
-          console.error("Error during logout:", err);
-          return res.status(500).json({ message: "Error during logout" });
-        }
-
-        req.session.destroy((err) => {
-          if (err) {
-            console.error("Failed to destroy session:", err);
-            return res.status(500).json({ message: "Failed to destroy session" });
-          }
-
-          res.clearCookie("connect.sid");
-          res.status(200).json({ message: "Logged out successfully" });
-        });
+        if (err) return res.status(500).json({ error: "Logout failed" });
+        res.clearCookie("session");
+        res.redirect("http://securaid.mywire.org");
       });
     });
 
