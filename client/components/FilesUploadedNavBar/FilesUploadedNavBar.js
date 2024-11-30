@@ -16,11 +16,13 @@ export function FilesUploadedNavBar({
   const [filesByProject, setFilesByProject] = useState({});
   const [expandedProjects, setExpandedProjects] = useState([]);
 
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
   // Fetch projects from the backend
   const fetchProjects = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/projects?userId=${userId}`,
+        `${backendUrl}/api/projects?userId=${userId}`,
         {
           method: "GET",
           headers: {
@@ -44,7 +46,7 @@ export function FilesUploadedNavBar({
   const fetchFiles = async (projectId) => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/files?userId=${userId}&projectId=${projectId}`,
+        `${backendUrl}/api/files?userId=${userId}&projectId=${projectId}`,
         {
           method: "GET",
           headers: {
@@ -72,15 +74,12 @@ export function FilesUploadedNavBar({
     console.log("Deleting file with ID:", fileId);
 
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/files/${fileId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${backendUrl}/api/files/${fileId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         const { deleteProject } = await response.json();
@@ -88,7 +87,7 @@ export function FilesUploadedNavBar({
         if (deleteProject) {
           // Delete the project if no files remain
           const projectResponse = await fetch(
-            `http://localhost:4000/api/projects/${projectId}`,
+            `${backendUrl}/api/projects/${projectId}`,
             {
               method: "DELETE",
               headers: {
@@ -98,48 +97,40 @@ export function FilesUploadedNavBar({
           );
 
           if (projectResponse.ok) {
-            enqueueSnackbar(
-              `All files in project deleted successfully.`,
-              { variant: "success" }
-            );
-            enqueueSnackbar(
-              `No files remaining in project. Project deleted.`,
-              { variant: "success" }
-            );
+            enqueueSnackbar(`All files in project deleted successfully.`, {
+              variant: "success",
+            });
+            enqueueSnackbar(`No files remaining in project. Project deleted.`, {
+              variant: "success",
+            });
             fetchProjects(); // Refresh the list of projects
           } else {
-            enqueueSnackbar(
-              `Error deleting project.`,
-              { variant: "error" }
-            );
+            enqueueSnackbar(`Error deleting project.`, { variant: "error" });
           }
         } else {
           // Project still exists, refresh its files
           await fetchFiles(projectId);
-          enqueueSnackbar(
-            `File delete successfully!`,
-            { variant: "success" }
-          );
+          enqueueSnackbar(`File delete successfully!`, { variant: "success" });
         }
       } else {
-        enqueueSnackbar(
-          `Error deleting file.`,
-          { variant: "error" }
-        );
+        enqueueSnackbar(`Error deleting file.`, { variant: "error" });
       }
     } catch (error) {
       console.error("Error during file deletion:", error);
-      enqueueSnackbar(
-        `An error occurred during file deletion.`,
-        { variant: "error" }
-      );
+      enqueueSnackbar(`An error occurred during file deletion.`, {
+        variant: "error",
+      });
     }
   };
 
   // View scan results
   const handleViewResults = async (scanId) => {
     try {
-      const response = await fetch(`/api/virustotal-results?scanId=${scanId}`);
+      console.log("Fetching VirusTotal results for scanId:", scanId);
+
+      const response = await fetch(
+        `${backendUrl}/api/virustotal-results?scanId=${scanId}`
+      );
       if (response.ok) {
         const result = await response.json();
         onViewResults(result); // Pass results to parent component
@@ -201,7 +192,10 @@ export function FilesUploadedNavBar({
                         className="file-button"
                         size={30}
                         color="white"
-                        onClick={() => handleViewResults(file.scanId)}
+                        onClick={() => {
+                          console.log("File details:", file); // Add this log
+                          handleViewResults(file.scanId); // Ensure `file.scanId` exists here
+                        }}
                       />
                       <RiDeleteBin6Line
                         className="file-button"
