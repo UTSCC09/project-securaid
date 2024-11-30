@@ -16,6 +16,8 @@ export function UploadContentComponent({
   const [folderName, setFolderName] = useState("");
   const [uploadedLinks, setUploadedLinks] = useState([]);
 
+  const backendUrl = "http://localhost:4000";
+
   // const checkImageMetadata = async (file) => {
   //   const arrayBuffer = await file.arrayBuffer();
   //   try {
@@ -62,7 +64,7 @@ export function UploadContentComponent({
   const scanWithVirusTotal = async (filePath) => {
     try {
       console.log("Sending file to VirusTotal:", filePath);
-      const response = await fetch("/api/virustotal-scan", {
+      const response = await fetch(`${backendUrl}/api/virustotal-scan`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +107,7 @@ export function UploadContentComponent({
         contentType: file.type,
       }));
 
-      const response = await fetch("/api/upload", {
+      const response = await fetch(`${backendUrl}/api/upload`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ folderName, files: fileData }),
@@ -142,8 +144,9 @@ export function UploadContentComponent({
           return { ...fileLink, scanId };
         })
       );
+      console.log("Scan results:", scanResults);
 
-      const projectResponse = await fetch("http://localhost:4000/api/projects", {
+      const projectResponse = await fetch(`${backendUrl}/api/projects`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -160,7 +163,7 @@ export function UploadContentComponent({
         }),
         credentials: "include",
       });
-
+      console.log("Final uploadedLinks:", scanResults);
 
       if (!projectResponse.ok) {
         throw new Error("Failed to create project in the backend.");
