@@ -33,8 +33,10 @@ export function handleSignup(username, password, email, fail, success) {
     .catch(fail);
 }
 
-export function handleSignout(success) {
-  fetch(`${backendUrl}/auth/logout`, {
+export function handleSignout(success,isGoogleUsed) {
+  const google_url = isGoogleUsed ? "/auth/logout" : "/api/logout";
+  console.log("---------->" + google_url);
+  fetch(`${backendUrl}${google_url}`, {
     method: "GET",
     credentials: "include",
   })
