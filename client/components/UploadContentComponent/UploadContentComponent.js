@@ -149,20 +149,17 @@ export function UploadContentComponent({
       );
       console.log("Scan results:", scanResults);
 
-      const projectResponse = await fetch(
-        "http://localhost:4000/api/projects",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            folderName,
-            uploadedLinks: scanResults,
-            userId,
-          }),
-        }
-      );
+      const projectResponse = await fetch(`${backendUrl}/api/projects`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          folderName,
+          uploadedLinks: scanResults,
+          userId,
+        }),
+      });
       console.log("Final uploadedLinks:", scanResults);
 
       if (!projectResponse.ok) {
