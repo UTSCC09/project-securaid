@@ -109,14 +109,6 @@ const ensureAuthenticated = (req, res, next) => {
   res.status(401).json({ message: "Unauthorized. Please log in." });
 };
 
-// Input validation and sanitization
-const validateRequest = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-};
 async function connectToDatabase() {
   try {
     await client.connect();
@@ -143,7 +135,6 @@ async function connectToDatabase() {
         body("password").isString().trim().isLength({ min: 6 }).escape(),
         body("email").isEmail().normalizeEmail(),
       ],
-      validateRequest,
       async (req, res) => {
         try {
           const { username, password, email } = req.body;
@@ -327,7 +318,7 @@ async function connectToDatabase() {
     app.get(
       "/api/user/:username",
       [param("username").isString().trim().escape()],
-      validateRequest,
+
       ensureAuthenticated,
       async (req, res) => {
         try {
@@ -352,7 +343,7 @@ async function connectToDatabase() {
         body("usernameOrEmail").isString().trim().escape(),
         body("password").isString().trim().escape(),
       ],
-      validateRequest,
+
       async (req, res) => {
         try {
           const { usernameOrEmail, password } = req.body;
@@ -382,7 +373,7 @@ async function connectToDatabase() {
         body("userId").isString().trim().escape(),
         body("ownership").isString().trim().escape(),
       ],
-      validateRequest,
+
       ensureAuthenticated,
       async (req, res) => {
         console.log("Received data:", req.body);
