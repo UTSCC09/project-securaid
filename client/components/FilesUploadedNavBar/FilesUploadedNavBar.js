@@ -28,6 +28,7 @@ export function FilesUploadedNavBar({
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
         }
       );
 
@@ -52,6 +53,7 @@ export function FilesUploadedNavBar({
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
         }
       );
 
@@ -79,6 +81,7 @@ export function FilesUploadedNavBar({
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -93,6 +96,7 @@ export function FilesUploadedNavBar({
               headers: {
                 "Content-Type": "application/json",
               },
+              credentials: "include",
             }
           );
 

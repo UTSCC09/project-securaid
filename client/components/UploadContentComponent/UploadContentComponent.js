@@ -70,6 +70,7 @@ export function UploadContentComponent({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ s3Url: filePath }),
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -111,6 +112,7 @@ export function UploadContentComponent({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ folderName, files: fileData }),
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -128,6 +130,7 @@ export function UploadContentComponent({
             method: "PUT",
             headers: { "Content-Type": files[index].type },
             body: files[index],
+            credentials: "include",
           })
         )
       );

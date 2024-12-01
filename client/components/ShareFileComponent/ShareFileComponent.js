@@ -27,6 +27,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
         }
       );
 
@@ -51,6 +52,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
         }
       );
 
@@ -73,6 +75,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
       const response = await fetch(`${backendUrl}/api/all-users`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -130,6 +133,7 @@ export function ShareFileComponent({ userId, refreshTrigger }) {
               fileUrl: file.url,
               expiryTime: `${expiryHours}:${expiryMinutes}`,
             }),
+            credentials: "include",
           });
 
           if (response.ok) {

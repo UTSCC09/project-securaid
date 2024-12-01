@@ -75,6 +75,7 @@ export function SharedFilesComponent({ username }) {
         `${backendUrl}/api/delete-shared-file/${fileId}`,
         {
           method: "DELETE",
+          credentials: "include",
         }
       );
 
@@ -103,6 +104,7 @@ export function SharedFilesComponent({ username }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -155,6 +157,7 @@ export function SharedFilesComponent({ username }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: currentEmail, otp }),
+        credentials: "include",
       });
 
       if (response.ok) {
