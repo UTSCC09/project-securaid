@@ -7,26 +7,26 @@ services:
     restart: always
     ports:
       - "80:80"
-      # - "443:443"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      # - ./certs:/etc/nginx/certs
-      # - ./vhost:/etc/nginx/vhost.d
-      # - ./html:/usr/share/nginx/html
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
 
-  # nginx-proxy-acme:
-  #   image: nginxproxy/acme-companion
-  #   container_name: nginx-proxy-acme
-  #   restart: always
-  #   depends_on:
-  #     - nginx-proxy
-  #   volumes_from:
-  #     - nginx-proxy
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - ./acme:/etc/acme.sh
-  #   environment:
-  #     - DEFAULT_EMAIL=securaid.otp@gmail.com
+  nginx-proxy-acme:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    restart: always
+    depends_on:
+      - nginx-proxy
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./acme:/etc/acme.sh
+    environment:
+      - DEFAULT_EMAIL=securaid.otp@gmail.com
 
   frontend:
     image: securaid-frontend
@@ -35,7 +35,6 @@ services:
     environment:
       - VIRTUAL_HOST=${FRONTEND_DOMAIN}
       - LETSENCRYPT_HOST=${FRONTEND_DOMAIN}
-      - LETSENCRYPT_EMAIL=securaid.otp@gmail.com
       - NEXT_PUBLIC_PACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
 
   backend:
@@ -45,7 +44,6 @@ services:
     environment:
       - VIRTUAL_HOST=${BACKEND_DOMAIN}
       - LETSENCRYPT_HOST=${BACKEND_DOMAIN}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
       - FRONTEND_URL=${FRONTEND_URL}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
