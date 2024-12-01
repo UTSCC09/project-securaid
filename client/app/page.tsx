@@ -1,11 +1,11 @@
 "use client";
+import Link from "next/link";
+import { SnackbarProvider } from "notistack";
 import { useEffect, useState } from "react";
 import { ContentComponent } from "../components/ContentComponent/ContentComponent";
 import { Globe } from "../components/Globe/Globe";
 import { HyperText } from "../components/HyperText/HyperText";
 import { LoginComponent } from "../components/LoginComponent/LoginComponent";
-import { SnackbarProvider } from "notistack";
-import Link from "next/link";
 
 import {
   handleSignin,
@@ -73,7 +73,7 @@ function Page() {
                 signup={handleSignup}
                 signin={handleSignin}
                 onLogin={setUsername}
-                isGoogleUsed={isGoogleUsed}
+                isGoogleUsed={setIsGoogleUsed}
               />
             </div>
             <div

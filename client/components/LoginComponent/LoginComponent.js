@@ -4,7 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import "./LoginComponent.css";
 
 export function LoginComponent(props) {
-  const { signup, signin, onLogin, setIsGoogleUsed } = props;
+  const { signup, signin, onLogin, isGoogleUsed } = props;
   const [isSignUp, setIsSignUp] = useState(false);
   const [isGoogleSignIn, setIsGoogleSignIn] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
@@ -17,7 +17,7 @@ export function LoginComponent(props) {
 
   const handleGoogleSignIn = (e) => {
     e.preventDefault(); // Prevent default form submission
-    setIsGoogleUsed(true); // Indicate Google sign-in
+    isGoogleUsed(true); // Indicate Google sign-in
     setIsGoogleSignIn(true); // Indicate Google sign-in
     window.location.href = `https://securaid-backend.mywire.org/auth/google`;
   };
