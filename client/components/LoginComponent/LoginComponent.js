@@ -6,6 +6,7 @@ import "./LoginComponent.css";
 export function LoginComponent(props) {
   const { signup, signin, onLogin } = props;
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isGoogleSignIn, setIsGoogleSignIn] = useState(false); // New state to track Google sign-in
   const { enqueueSnackbar } = useSnackbar();
 
   const usernameOrEmailRef = useRef(null);
@@ -14,10 +15,11 @@ export function LoginComponent(props) {
   const emailRef = useRef(null);
   const signUpPasswordRef = useRef(null);
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = (e) => {
+    e.preventDefault(); // Prevent default form submission
+    setIsGoogleSignIn(true); // Indicate Google sign-in
     window.location.href = `https://securaid-backend.mywire.org/auth/google`;
   };
-
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -45,6 +47,8 @@ export function LoginComponent(props) {
 
   const handleSignIn = (e) => {
     e.preventDefault();
+    if (isGoogleSignIn) return; // Skip validation if Google sign-in is triggered
+
     const usernameOrEmail = usernameOrEmailRef.current.value;
     const password = passwordRef.current.value;
 
@@ -63,6 +67,8 @@ export function LoginComponent(props) {
 
   const handleSignUp = (e) => {
     e.preventDefault();
+    if (isGoogleSignIn) return; // Skip validation if Google sign-in is triggered
+
     const username = usernameRef.current.value;
     const email = emailRef.current.value;
     const password = signUpPasswordRef.current.value;
@@ -92,7 +98,7 @@ export function LoginComponent(props) {
             className="form-element"
             placeholder="Enter your username"
             name="username"
-            required
+            required={!isGoogleSignIn} // Required only if not using Google sign-in
             ref={usernameRef}
           />
           <input
@@ -101,7 +107,7 @@ export function LoginComponent(props) {
             className="form-element"
             placeholder="Enter your email"
             name="email"
-            required
+            required={!isGoogleSignIn} // Required only if not using Google sign-in
             ref={emailRef}
           />
           <input
@@ -110,7 +116,7 @@ export function LoginComponent(props) {
             className="form-element"
             placeholder="Enter your password"
             name="password"
-            required
+            required={!isGoogleSignIn} // Required only if not using Google sign-in
             ref={signUpPasswordRef}
           />
           <div id="auth-buttons_signup">
@@ -142,7 +148,7 @@ export function LoginComponent(props) {
             className="form-element"
             placeholder="Enter your username or email"
             name="usernameOrEmail"
-            required
+            required={!isGoogleSignIn} // Required only if not using Google sign-in
             ref={usernameOrEmailRef}
           />
           <input
@@ -151,7 +157,7 @@ export function LoginComponent(props) {
             className="form-element"
             placeholder="Enter your password"
             name="password"
-            required
+            required={!isGoogleSignIn} // Required only if not using Google sign-in
             ref={passwordRef}
           />
           <div id="auth-buttons_signin">
