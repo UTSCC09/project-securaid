@@ -300,10 +300,15 @@ async function connectToDatabase() {
     app.get("/auth/logout", (req, res) => {
       req.logout((err) => {
         if (err) return res.status(500).json({ error: "Logout failed" });
-        res.clearCookie("session");
-        res.redirect("https://securaid.mywire.org");
+
+        res.clearCookie("connect.sid");
+        const googleLogoutUrl = "https://accounts.google.com/logout";
+        const returnTo = encodeURIComponent("https://securaid.mywire.org");
+        res.redirect(`${googleLogoutUrl}?continue=${returnTo}`);
       });
     });
+
+
 
     app.get("/api/all-users", async (req, res) => {
       try {
