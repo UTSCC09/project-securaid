@@ -68,7 +68,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://securaid.mywire.org/auth/google/callback",
+      callbackURL: "https://securaid.mywire.org/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -294,7 +294,7 @@ async function connectToDatabase() {
     app.get(
       "/auth/google/callback",
       passport.authenticate("google", {
-        failureRedirect: "http://securaid.mywire.org",
+        failureRedirect: "https://securaid.mywire.org",
       }),
       (req, res) => {
         const user = req.user;
@@ -302,7 +302,7 @@ async function connectToDatabase() {
         req.session.userId = user._id;
         console.log("Session userId set:", req.session.userId);
 
-        res.redirect(`http://securaid.mywire.org?username=${user.username}`);
+        res.redirect(`https://securaid.mywire.org?username=${user.username}`);
       }
     );
 
@@ -310,7 +310,7 @@ async function connectToDatabase() {
       req.logout((err) => {
         if (err) return res.status(500).json({ error: "Logout failed" });
         res.clearCookie("session");
-        res.redirect("http://securaid.mywire.org");
+        res.redirect("https://securaid.mywire.org");
       });
     });
 
