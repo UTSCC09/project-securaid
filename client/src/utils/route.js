@@ -34,7 +34,7 @@ export function handleSignup(username, password, email, fail, success) {
 }
 
 export function handleSignout(success) {
-  fetch(`${backendUrl}/api/logout`, {
+  fetch(`${backendUrl}/auth/logout`, {
     method: "GET",
     credentials: "include",
   })

@@ -289,22 +289,35 @@ async function connectToDatabase() {
       }),
       (req, res) => {
         const user = req.user;
-
         req.session.userId = user._id;
-        console.log("Session userId set:", req.session.userId);
-
+        req.session.loginType = "google"; // Mark as Google login
         res.redirect(`https://securaid.mywire.org?username=${user.username}`);
       }
     );
 
-    app.get("/auth/logout", (req, res) => {
+    app.get("/auth/logout", async (req, res) => {
+      const isGoogleUser = req.session.passport?.user?.token; // Check if logged in with Google
+
       req.logout((err) => {
         if (err) return res.status(500).json({ error: "Logout failed" });
 
         res.clearCookie("connect.sid");
-        const googleLogoutUrl = "https://accounts.google.com/logout";
-        const returnTo = encodeURIComponent("https://securaid.mywire.org");
-        res.redirect(`${googleLogoutUrl}?continue=${returnTo}`);
+
+        if (isGoogleUser) {
+          // Revoke Google token
+          const revokeUrl = `https://oauth2.googleapis.com/revoke?token=${isGoogleUser}`;
+          fetch(revokeUrl, { method: "POST" })
+            .then(() => {
+              res.redirect("https://securaid.mywire.org");
+            })
+            .catch((revokeError) => {
+              console.error("Error revoking Google token:", revokeError);
+              res.redirect("https://securaid.mywire.org");
+            });
+        } else {
+          // Standard logout
+          res.redirect("https://securaid.mywire.org");
+        }
       });
     });
 
@@ -340,33 +353,49 @@ async function connectToDatabase() {
       }
     );
 
-    app.post(
-      "/api/users/login",
-      [
-        body("usernameOrEmail").isString().trim().escape(),
-        body("password").isString().trim().escape(),
-      ],
+    // app.post(
+    //   "/api/users/login",
+    //   [
+    //     body("usernameOrEmail").isString().trim().escape(),
+    //     body("password").isString().trim().escape(),
+    //   ],
 
-      async (req, res) => {
-        try {
-          const { usernameOrEmail, password } = req.body;
+    //   async (req, res) => {
+    //     try {
+    //       const { usernameOrEmail, password } = req.body;
 
-          const user = await usersCollection.findOne({
-            $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
-          });
+    //       const user = await usersCollection.findOne({
+    //         $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+    //       });
 
-          if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ message: "Invalid credentials." });
-          }
+    //       if (!user || !(await bcrypt.compare(password, user.password))) {
+    //         return res.status(401).json({ message: "Invalid credentials." });
+    //       }
 
-          req.session.userId = user._id;
-          res.json({ message: "Login successful", username: user.username });
-        } catch (error) {
-          console.error("Error during login:", error);
-          res.status(500).json({ message: "Error during login." });
-        }
+    //       req.session.userId = user._id;
+    //       res.json({ message: "Login successful", username: user.username });
+    //     } catch (error) {
+    //       console.error("Error during login:", error);
+    //       res.status(500).json({ message: "Error during login." });
+    //     }
+    //   }
+    // );
+
+    app.post("/api/users/login", async (req, res) => {
+      const { usernameOrEmail, password } = req.body;
+
+      const user = await usersCollection.findOne({
+        $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+      });
+
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        return res.status(401).json({ message: "Invalid credentials." });
       }
-    );
+
+      req.session.userId = user._id;
+      req.session.loginType = "standard"; // Mark as standard login
+      res.json({ message: "Login successful", username: user.username });
+    });
 
     app.post(
       "/api/projects",
