@@ -21,6 +21,17 @@ const s3 = new AWS.S3({
 });
 
 const env = process.env.NODE_ENV || "development";
+let AUTH_URL;
+let AUTH_URL_backend;
+if(env === "development") {
+  AUTH_URL = "http://localhost:3000";
+  AUTH_URL_backend = "http://localhost:4000";
+}
+else{
+  AUTH_URL = "https://securaid.mywire.org";
+  AUTH_URL_backend = "https://securaid-backend.mywire.org";
+}
+console.log("\n\n\n------>" + AUTH_URL, env)
 
 const envPath = path.resolve(__dirname, `.env.${env}.local`);
 dotenv.config({ path: envPath });
@@ -31,13 +42,13 @@ const PORT = 4000;
 
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL],
+    origin: AUTH_URL,
     credentials: true,
   })
 );
 app.use(express.json());
 app.use(cookieParser());
-console.log(`CORS ALLOWS: ${process.env.FRONTEND_URL}`);
+console.log(`CORS ALLOWS: ${AUTH_URL}`);
 
 app.use(
   session({
@@ -68,7 +79,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://securaid-backend.mywire.org/auth/google/callback",
+      callbackURL: `${AUTH_URL_backend}/auth/google/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -95,6 +106,7 @@ passport.use(
     }
   )
 );
+
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
@@ -103,7 +115,7 @@ app.use(passport.session());
 
 const ensureAuthenticated = (req, res, next) => {
   console.log("Current session:", req.session);
-  if (req.session.userId) {
+  if (req.session && req.session.userId) {
     return next();
   }
   res.status(401).json({ message: "Unauthorized. Please log in." });
@@ -285,15 +297,19 @@ async function connectToDatabase() {
     app.get(
       "/auth/google/callback",
       passport.authenticate("google", {
-        failureRedirect: "https://securaid.mywire.org",
+        failureRedirect: AUTH_URL
       }),
       (req, res) => {
+
         const user = req.user;
         req.session.userId = user._id;
         req.session.loginType = "google"; // Mark as Google login
-        res.redirect(`https://securaid.mywire.org?username=${user.username}`);
+
+        const redirectUrl = `${AUTH_URL}?username=${user.username}`;
+        res.redirect(redirectUrl);
       }
     );
+
 
     app.get("/auth/logout", async (req, res) => {
       const isGoogleUser = req.session.passport?.user?.token; // Check if logged in with Google
@@ -303,23 +319,25 @@ async function connectToDatabase() {
 
         res.clearCookie("connect.sid");
 
+        const redirectUrl = AUTH_URL;
+
         if (isGoogleUser) {
           // Revoke Google token
           const revokeUrl = `https://oauth2.googleapis.com/revoke?token=${isGoogleUser}`;
           fetch(revokeUrl, { method: "POST" })
             .then(() => {
-              res.redirect("https://securaid.mywire.org");
+              res.redirect(redirectUrl);
             })
             .catch((revokeError) => {
               console.error("Error revoking Google token:", revokeError);
-              res.redirect("https://securaid.mywire.org");
+              res.redirect(redirectUrl);
             });
         } else {
-          // Standard logout
-          res.redirect("https://securaid.mywire.org");
+          res.redirect(redirectUrl);
         }
       });
     });
+
 
     app.get("/api/all-users", async (req, res) => {
       try {
@@ -337,6 +355,7 @@ async function connectToDatabase() {
 
       ensureAuthenticated,
       async (req, res) => {
+
         try {
           const { username } = req.params;
 
@@ -402,20 +421,18 @@ async function connectToDatabase() {
       [
         body("folderName").isString().trim().escape(),
         body("uploadedLinks").isArray(),
-        body("userId").isString().trim().escape(),
         body("ownership").isString().trim().escape(),
       ],
-
       ensureAuthenticated,
       async (req, res) => {
-        console.log("Received data:", req.body);
         try {
-          const { folderName, uploadedLinks, userId, ownership } = req.body;
-
+          console.log("Session during project creation:", req.session);
+          const { folderName, uploadedLinks, ownership } = req.body;
+          console.log("userId = ", req.session.userId)
+          userId = req.session.userId;
           const project = await database
             .collection("projects")
             .findOne({ folderName, userId });
-
           let projectId;
           if (project) {
             projectId = project._id;

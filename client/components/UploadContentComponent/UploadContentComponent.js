@@ -161,7 +161,6 @@ export function UploadContentComponent({
             url,
             scanId,
           })),
-          userId,
           ownership: "private",
         }),
         credentials: "include",
