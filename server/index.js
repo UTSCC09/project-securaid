@@ -41,7 +41,7 @@ console.log(`CORS ALLOWS: ${process.env.FRONTEND_URL}`);
 
 app.use(
   session({
-    secret: "@#HJDNJ@#$32445SFjN!@#@$",
+    secret: process.env.SESSION_SECRET || "@#HJDNJ@#$32445SFjN!@#@$",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
@@ -49,9 +49,9 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
