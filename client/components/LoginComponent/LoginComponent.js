@@ -4,8 +4,9 @@ import { FcGoogle } from "react-icons/fc";
 import "./LoginComponent.css";
 
 export function LoginComponent(props) {
-  const { signup, signin, onLogin, usedGoogleFunction} = props;
+  const { signup, signin, onLogin } = props;
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isGoogleSignIn, setIsGoogleSignIn] = useState(false); // New state to track Google sign-in
   const { enqueueSnackbar } = useSnackbar();
 
   const usernameOrEmailRef = useRef(null);
@@ -16,7 +17,7 @@ export function LoginComponent(props) {
 
   const handleGoogleSignIn = (e) => {
     e.preventDefault(); // Prevent default form submission
-    usedGoogleFunction(true); // Indicate Google sign-in
+    setIsGoogleSignIn(true); // Indicate Google sign-in
     window.location.href = `https://securaid-backend.mywire.org/auth/google`;
   };
 
@@ -66,7 +67,7 @@ export function LoginComponent(props) {
 
   const handleSignUp = (e) => {
     e.preventDefault();
-    if (isGoogleSignIn) return;
+    if (isGoogleSignIn) return; // Skip validation if Google sign-in is triggered
 
     const username = usernameRef.current.value;
     const email = emailRef.current.value;

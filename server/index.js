@@ -298,31 +298,15 @@ async function connectToDatabase() {
     );
 
     app.get("/auth/logout", (req, res) => {
-      // Logout the user from the app's session
       req.logout((err) => {
-        if (err) {
-          console.error("Error logging out:", err);
-          return res.status(500).json({ error: "Logout failed" });
-        }
+        if (err) return res.status(500).json({ error: "Logout failed" });
 
-        // Destroy the session explicitly
-        req.session.destroy((sessionErr) => {
-          if (sessionErr) {
-            console.error("Error destroying session:", sessionErr);
-            return res.status(500).json({ error: "Error destroying session" });
-          }
-
-          // Clear the app's session cookie
-          res.clearCookie("connect.sid");
-
-          // Redirect to Google logout and then back to the app
-          const googleLogoutUrl = "https://accounts.google.com/logout";
-          const returnToApp = encodeURIComponent("https://securaid.mywire.org");
-          res.redirect(`${googleLogoutUrl}?continue=${returnToApp}`);
-        });
+        res.clearCookie("connect.sid");
+        const googleLogoutUrl = "https://accounts.google.com/logout";
+        const returnTo = encodeURIComponent("https://securaid.mywire.org");
+        res.redirect(`${googleLogoutUrl}?continue=${returnTo}`);
       });
     });
-
 
     app.get("/api/all-users", async (req, res) => {
       try {
