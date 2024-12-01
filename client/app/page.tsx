@@ -15,6 +15,7 @@ import {
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 function Page() {
   const [username, setUsername] = useState<string | null>(null);
+  const [usedGoogle, setUsedGoogle] = useState(false);
 
   useEffect(() => {
     async function fetchUsername() {
@@ -55,7 +56,7 @@ function Page() {
               <button
                 className="sign-out-button"
                 id="sign-out-button"
-                onClick={() => handleSignout(() => setUsername(null))}
+                onClick={() => handleSignout(() => setUsername(null), usedGoogle)}
               >
                 Sign Out
               </button>
@@ -72,6 +73,7 @@ function Page() {
                 signup={handleSignup}
                 signin={handleSignin}
                 onLogin={setUsername}
+                usedGoogle={setUsedGoogle}
               />
             </div>
             <div
