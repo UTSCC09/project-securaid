@@ -56,7 +56,7 @@ function Page() {
               <button
                 className="sign-out-button"
                 id="sign-out-button"
-                onClick={() => handleSignout(() => setUsername(null), usedGoogle)}
+                onClick={() => handleSignout(() => {setUsername(null); setUsedGoogle(false);}, usedGoogle)}
               >
                 Sign Out
               </button>
