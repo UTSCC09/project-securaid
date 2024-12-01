@@ -26,7 +26,6 @@ const envPath = path.resolve(__dirname, `.env.${env}.local`);
 dotenv.config({ path: envPath });
 
 console.log(`Environment loaded from: ${env}`);
-
 const app = express();
 const PORT = 4000;
 
@@ -38,6 +37,7 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+console.log(`CORS ALLOWS: ${process.env.FRONTEND_URL}`);
 
 app.use(
   session({
