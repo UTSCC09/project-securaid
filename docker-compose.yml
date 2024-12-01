@@ -36,6 +36,7 @@ services:
       - VIRTUAL_HOST=${FRONTEND_DOMAIN}
       - LETSENCRYPT_HOST=${FRONTEND_DOMAIN}
       - LETSENCRYPT_EMAIL=securaid.otp@gmail.com
+      - NEXT_PUBLIC_PACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
 
   backend:
     image: securaid-backend
