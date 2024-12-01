@@ -1,29 +1,58 @@
 version: "3.8"
 
 services:
-  backend:
-    image: securaid-backend
-    container_name: securaid-backend
-    expose:
-      - "4000"
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      # - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      # - ./certs:/etc/nginx/certs
+      # - ./vhost:/etc/nginx/vhost.d
+      # - ./html:/usr/share/nginx/html
+
+  # nginx-proxy-acme:
+  #   image: nginxproxy/acme-companion
+  #   container_name: nginx-proxy-acme
+  #   restart: always
+  #   depends_on:
+  #     - nginx-proxy
+  #   volumes_from:
+  #     - nginx-proxy
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ./acme:/etc/acme.sh
+  #   environment:
+  #     - DEFAULT_EMAIL=securaid.otp@gmail.com
 
   frontend:
     image: securaid-frontend
-    container_name: securaid-frontend
-    expose:
-      - "3000"
+    container_name: frontend
+    restart: always
+    environment:
+      - VIRTUAL_HOST=${FRONTEND_DOMAIN}
+      - LETSENCRYPT_HOST=${FRONTEND_DOMAIN}
+      - LETSENCRYPT_EMAIL=securaid.otp@gmail.com
+      - NEXT_PUBLIC_PACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
 
-  nginx:
-    image: nginx:latest
-    container_name: securaid-nginx
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-      - frontend
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-
-networks:
-  default:
-    driver: bridge
+  backend:
+    image: securaid-backend
+    container_name: backend
+    restart: always
+    environment:
+      - VIRTUAL_HOST=${BACKEND_DOMAIN}
+      - LETSENCRYPT_HOST=${BACKEND_DOMAIN}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      - MONGODB_URI=${MONGODB_URI}
+      - GMAIL_PASSWORD=${GMAIL_PASSWORD}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}

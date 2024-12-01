@@ -5,6 +5,8 @@ import { Globe } from "../components/Globe/Globe";
 import { HyperText } from "../components/HyperText/HyperText";
 import { LoginComponent } from "../components/LoginComponent/LoginComponent";
 import { SnackbarProvider } from "notistack";
+import Link from "next/link";
+
 import {
   handleSignin,
   handleSignout,
@@ -17,13 +19,14 @@ function Page() {
   useEffect(() => {
     async function fetchUsername() {
       try {
+        console.log(`this is backendUrl: ${backendUrl}`);
         const response = await fetch(`${backendUrl}/api/protected`, {
           method: "GET",
           credentials: "include",
         });
         if (response.ok) {
           const data = await response.json();
-          setUsername(data.username); // Set username from backend response
+          setUsername(data.username);
         }
       } catch (error) {
         console.error("Error fetching username:", error);
@@ -85,6 +88,13 @@ function Page() {
             </div>
           </>
         )}
+      </div>
+      <div style={{ marginTop: "440px" }}>
+        <Link href="/credits">
+          <button style={{ padding: "10px 20px", cursor: "pointer" }}>
+            Credits
+          </button>
+        </Link>
       </div>
     </SnackbarProvider>
   );
