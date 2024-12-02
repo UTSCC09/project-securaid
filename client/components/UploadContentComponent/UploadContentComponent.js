@@ -63,7 +63,7 @@ export function UploadContentComponent({
 
   const scanWithVirusTotal = async (filePath) => {
     try {
-      console.log("Sending file to VirusTotal:", filePath);
+      //console.log("Sending file to VirusTotal:", filePath);
       const response = await fetch(`${backendUrl}/api/virustotal-scan`, {
         method: "POST",
         headers: {
@@ -80,7 +80,7 @@ export function UploadContentComponent({
       }
 
       const result = await response.json();
-      console.log("VirusTotal Response:", result);
+      //console.log("VirusTotal Response:", result);
       return result.scanId;
     } catch (error) {
       console.error("Error scanning with VirusTotal:", error);
@@ -147,7 +147,7 @@ export function UploadContentComponent({
           return { ...fileLink, scanId };
         })
       );
-      console.log("Scan results:", scanResults);
+      //console.log("Scan results:", scanResults);
 
       const projectResponse = await fetch(`${backendUrl}/api/projects`, {
         method: "POST",
@@ -160,7 +160,7 @@ export function UploadContentComponent({
           userId,
         }),
       });
-      console.log("Final uploadedLinks:", scanResults);
+      //console.log("Final uploadedLinks:", scanResults);
 
       if (!projectResponse.ok) {
         throw new Error("Failed to create project in the backend.");
@@ -169,7 +169,7 @@ export function UploadContentComponent({
       }
 
       const { projectId } = await projectResponse.json();
-      console.log(`Project created successfully with ID: ${projectId}`);
+      //console.log(`Project created successfully with ID: ${projectId}`);
 
       if (onUploadSuccess) {
         onUploadSuccess({ uploadedFiles: fileLinks, scanResults });

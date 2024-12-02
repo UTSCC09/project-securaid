@@ -22,7 +22,7 @@ export function DashboardComponent({ scanResults }) {
     const data = response.data;
     const stats = data.attributes.stats;
     const results = data.attributes.results;
-    console.log("Analysis Data:", data);
+    //console.log("Analysis Data:", data);
     setAnalysisInfo(data);
     // Calculate the safety score using stats
     const malicious = stats.malicious || 0;
@@ -44,7 +44,7 @@ export function DashboardComponent({ scanResults }) {
 
     // Set the calculated safety score
     setSafetyScore(safetyScore);
-    console.log("Safety Score:", safetyScore);
+    //console.log("Safety Score:", safetyScore);
   }
 
   return (

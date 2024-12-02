@@ -73,7 +73,7 @@ export function FilesUploadedNavBar({
 
   // Delete a file
   const handleFileDelete = async (fileId, projectId) => {
-    console.log("Deleting file with ID:", fileId);
+    //console.log("Deleting file with ID:", fileId);
 
     try {
       const response = await fetch(`${backendUrl}/api/files/${fileId}`, {
@@ -130,7 +130,7 @@ export function FilesUploadedNavBar({
   // button clicked to view scan results
   const handleViewResults = async (scanId) => {
     try {
-      console.log("Fetching VirusTotal results for scanId:", scanId);
+      //console.log("Fetching VirusTotal results for scanId:", scanId);
 
       const response = await fetch(
         `${backendUrl}/api/virustotal-results?scanId=${scanId}`
