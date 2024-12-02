@@ -17,25 +17,6 @@ function Page() {
   const [username, setUsername] = useState<string | null>(null);
   const [isGoogleUsed, setIsGoogleUsed] = useState(false);
 
-  useEffect(() => {
-    fetch(`${backendUrl}/api/protected`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Not authenticated");
-      })
-      .then((data) => {
-        setUsername(data.username);
-      })
-      .catch(() => {
-        setUsername(null);
-      });
-  }, []);
-
   return (
     <SnackbarProvider maxSnack={5} autoHideDuration={2500}>
       <div
