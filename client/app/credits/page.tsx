@@ -47,6 +47,15 @@ function Credits() {
         </li>
         <li>
           <a
+            href="https://grainient.supply/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Background from Grainient.supply
+          </a>
+        </li>
+        <li>
+          <a
             href="https://chatgpt.com/share/674b4b56-a2e8-8005-bab7-dc36542f8491"
             target="_blank"
             rel="noopener noreferrer"
