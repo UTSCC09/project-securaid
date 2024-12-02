@@ -19,24 +19,18 @@ function Page() {
 
   useEffect(() => {
     async function fetchUsername() {
-      fetch("https://securaid-backend.mywire.org/api/session", {
-        method: "GET",
-        credentials: "include", // Include cookies in the request
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("No valid session.");
-          }
-          return response.json(); // Parse the JSON response
-        })
-        .then((data) => {
-          const { username } = data;
-          console.log(`Welcome back, ${username}!`);
-          // Update the UI with the logged-in user's info
-        })
-        .catch((error) => {
-          console.error("No valid session:", error.message);
+      try {
+        const response = await fetch(`${backendUrl}/api/protected`, {
+          method: "GET",
+          credentials: "include",
         });
+        if (response.ok) {
+          const data = await response.json();
+          setUsername(data.username);
+        }
+      } catch (error) {
+        console.error("Error fetching username:", error);
+      }
     }
     fetchUsername();
   }, []);
