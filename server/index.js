@@ -13,7 +13,6 @@ const fetch = require("node-fetch");
 const FormData = require("form-data");
 const path = require("path");
 const dotenv = require("dotenv");
-const jwt = require("jsonwebtoken");
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -42,18 +41,6 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 console.log(`CORS ALLOWS: ${process.env.FRONTEND_URL}`);
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your_session_secret",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI,
-      collectionName: "sessions",
-    }),
-  })
-);
 
 const ensureAuthenticated = (req, res, next) => {
   const token = req.cookies.auth_token;
@@ -90,6 +77,7 @@ passport.use(
         const { id, displayName, emails } = profile;
         const email = emails[0].value;
 
+        // Check if user exists in the database
         let user = await usersCollection.findOne({ googleId: id });
 
         if (!user) {
@@ -102,7 +90,7 @@ passport.use(
           await usersCollection.insertOne(user);
         }
 
-        done(null, user);
+        done(null, user); // Pass the user to the next middleware
       } catch (error) {
         done(error, null);
       }
@@ -484,25 +472,6 @@ async function connectToDatabase() {
         res
           .status(500)
           .json({ error: "An error occurred while processing the request." });
-      }
-    });
-
-    // Check and restore session for auto-login
-    app.get("/api/session", (req, res) => {
-      if (req.session && req.session.userId) {
-        usersCollection.findOne(
-          { _id: new ObjectId(req.session.userId) },
-          (err, user) => {
-            if (err || !user) {
-              return res
-                .status(401)
-                .json({ message: "Session invalid or user not found." });
-            }
-            return res.status(200).json({ username: user.username });
-          }
-        );
-      } else {
-        return res.status(401).json({ message: "No active session found." });
       }
     });
 
