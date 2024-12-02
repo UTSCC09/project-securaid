@@ -49,8 +49,14 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
+      sameSite: "Strict", // prevent CSRF attacks
+      domain:
+        process.env.NODE_ENV === "production"
+          ? "securaid.mywire.org"
+          : "localhost",
     },
   })
 );
