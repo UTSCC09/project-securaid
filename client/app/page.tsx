@@ -17,24 +17,6 @@ function Page() {
   const [username, setUsername] = useState<string | null>(null);
   const [isGoogleUsed, setIsGoogleUsed] = useState(false);
 
-  useEffect(() => {
-    async function fetchUsername() {
-      try {
-        const response = await fetch(`${backendUrl}/api/protected`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUsername(data.username);
-        }
-      } catch (error) {
-        console.error("Error fetching username:", error);
-      }
-    }
-    fetchUsername();
-  }, []);
-
   return (
     <SnackbarProvider maxSnack={5} autoHideDuration={2500}>
       <div
