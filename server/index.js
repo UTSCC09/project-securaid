@@ -99,14 +99,6 @@ passport.deserializeUser((user, done) => done(null, user));
 app.use(passport.initialize());
 app.use(passport.session());
 
-const ensureAuthenticated = (req, res, next) => {
-  console.log("Current session:", req.session);
-  if (req.session.userId) {
-    return next();
-  }
-  res.status(401).json({ message: "Unauthorized. Please log in." });
-};
-
 async function connectToDatabase() {
   try {
     await client.connect();
