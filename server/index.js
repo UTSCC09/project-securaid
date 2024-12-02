@@ -41,18 +41,20 @@ console.log(`CORS ALLOWS: ${process.env.FRONTEND_URL}`);
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "@#HJDNJ@#$32445SFjN!@#@$",
+    secret: process.env.SESSION_SECRET || "@#HJDNJ@#$32445SFjN!@#@$", // Session secret
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI,
+      mongoUrl: process.env.MONGODB_URI, // MongoDB URI for session storage
       collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-      sameSite: "Strict", // prevent CSRF attacks
+      secure: process.env.NODE_ENV === "production", // Secure cookies in production (only over HTTPS)
+      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
+      maxAge: 24 * 60 * 60 * 1000, // Cookie expiration (1 day)
+      sameSite: "Strict", // Prevent CSRF attacks
+      domain:
+        process.env.NODE_ENV === "production" ? ".mywire.org" : "localhost", // Allow cookies across subdomains
     },
   })
 );
