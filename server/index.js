@@ -25,6 +25,9 @@ const env = process.env.NODE_ENV || "development";
 const envPath = path.resolve(__dirname, `.env.${env}.local`);
 dotenv.config({ path: envPath });
 
+const JWT_SECRET = process.env.JWT_SECRET || "@#JFIDFJ#*$)@(32S";
+const JWT_EXPIRATION = "1d";
+
 console.log(`Environment loaded from: ${env}`);
 const app = express();
 const PORT = 4000;
@@ -39,22 +42,21 @@ app.use(express.json());
 app.use(cookieParser());
 console.log(`CORS ALLOWS: ${process.env.FRONTEND_URL}`);
 
-app.use(
-  session({
-    secret: "@#HJDNJ@#$32445SFjN!@#@$",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI,
-      collectionName: "sessions",
-    }),
-    cookie: {
-      secure: false,
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    },
-  })
-);
+const ensureAuthenticated = (req, res, next) => {
+  const token = req.cookies.auth_token;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized. Please log in." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // Attach user data to the request
+    next();
+  } catch (err) {
+    res.status(401).json({ message: "Invalid or expired token." });
+  }
+};
 
 // MongoDB connection setup
 const client = new MongoClient(process.env.MONGODB_URI);
@@ -100,14 +102,6 @@ passport.deserializeUser((user, done) => done(null, user));
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-const ensureAuthenticated = (req, res, next) => {
-  console.log("Current session:", req.session);
-  if (req.session.userId) {
-    return next();
-  }
-  res.status(401).json({ message: "Unauthorized. Please log in." });
-};
 
 async function connectToDatabase() {
   try {
@@ -166,7 +160,7 @@ async function connectToDatabase() {
       }
     });
 
-    app.post("/api/upload", async (req, res) => {
+    app.post("/api/upload", ensureAuthenticated, async (req, res) => {
       const { folderName, files } = req.body;
 
       if (!folderName || !files || files.length === 0) {
@@ -394,9 +388,20 @@ async function connectToDatabase() {
           return res.status(401).json({ message: "Incorrect password." });
         }
 
-        req.session.userId = user._id;
+        // Generate JWT token
+        const token = jwt.sign(
+          { userId: user._id, username: user.username },
+          JWT_SECRET,
+          { expiresIn: JWT_EXPIRATION }
+        );
 
-        res.json({ message: "Login successful", username: user.username }); // Return the username
+        res.cookie("auth_token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production", // Set to true in production
+          maxAge: 24 * 60 * 60 * 1000, // 1 day
+        });
+
+        res.json({ message: "Login successful", username: user.username });
       } catch (error) {
         console.error("Error during login:", error);
         res.status(500).json({ message: "Error during login." });
@@ -493,48 +498,14 @@ async function connectToDatabase() {
       }
     });
 
-    app.get("/api/protected", async (req, res) => {
-      if (!req.session.userId) {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized. Please log in." });
+    app.get("/api/protected", ensureAuthenticated, async (req, res) => {
+      const user = await usersCollection.findOne({
+        _id: new ObjectId(req.user.userId),
+      });
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
       }
-
-      try {
-        const user = await usersCollection.findOne({
-          _id: new ObjectId(req.session.userId),
-        });
-        if (!user) {
-          return res.status(404).json({ message: "User not found." });
-        }
-
-        res.json({ username: user.username });
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        res.status(500).json({ message: "Internal server error." });
-      }
-    });
-
-    app.get("/api/protected", async (req, res) => {
-      if (!req.session.userId) {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized. Please log in." });
-      }
-
-      try {
-        const user = await usersCollection.findOne({
-          _id: new ObjectId(req.session.userId),
-        });
-        if (!user) {
-          return res.status(404).json({ message: "User not found." });
-        }
-
-        res.json({ username: user.username });
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        res.status(500).json({ message: "Internal server error." });
-      }
+      res.json({ username: user.username });
     });
 
     app.delete("/api/files/:fileId", async (req, res) => {
@@ -647,14 +618,8 @@ async function connectToDatabase() {
     });
 
     app.get("/api/logout", (req, res) => {
-      req.session.destroy((err) => {
-        if (err) {
-          console.error("Error during logout:", err);
-          return res.status(500).json({ message: "Error during logout" });
-        }
-        res.clearCookie("connect.sid");
-        res.status(200).json({ message: "Logged out successfully" });
-      });
+      res.clearCookie("auth_token");
+      res.status(200).json({ message: "Logged out successfully" });
     });
 
     app.post("/api/share-file", async (req, res) => {
