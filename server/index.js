@@ -470,6 +470,21 @@ async function connectToDatabase() {
       }
     });
 
+    // Check and restore session for auto-login
+app.get("/api/session", (req, res) => {
+  if (req.session && req.session.userId) {
+    usersCollection.findOne({ _id: new ObjectId(req.session.userId) }, (err, user) => {
+      if (err || !user) {
+        return res.status(401).json({ message: "Session invalid or user not found." });
+      }
+      return res.status(200).json({ username: user.username });
+    });
+  } else {
+    return res.status(401).json({ message: "No active session found." });
+  }
+});
+
+
     app.get("/api/projects", async (req, res) => {
       try {
         const { userId } = req.query;
