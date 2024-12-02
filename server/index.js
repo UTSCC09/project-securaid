@@ -49,19 +49,20 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
   })
 );
 
+// MongoDB connection setup
 const client = new MongoClient(process.env.MONGODB_URI);
 let usersCollection;
 const passport = require("passport");
-const { NodeNextRequest } = require("next/dist/server/base-http/node");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
+// Configure Passport
 passport.use(
   new GoogleStrategy(
     {
@@ -74,9 +75,11 @@ passport.use(
         const { id, displayName, emails } = profile;
         const email = emails[0].value;
 
+        // Check if user exists in the database
         let user = await usersCollection.findOne({ googleId: id });
 
         if (!user) {
+          // Create a new user
           user = {
             googleId: id,
             username: displayName,
@@ -85,7 +88,7 @@ passport.use(
           await usersCollection.insertOne(user);
         }
 
-        done(null, user);
+        done(null, user); // Pass the user to the next middleware
       } catch (error) {
         done(error, null);
       }
@@ -97,6 +100,14 @@ passport.deserializeUser((user, done) => done(null, user));
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+const ensureAuthenticated = (req, res, next) => {
+  console.log("Current session:", req.session);
+  if (req.session.userId) {
+    return next();
+  }
+  res.status(401).json({ message: "Unauthorized. Please log in." });
+};
 
 async function connectToDatabase() {
   try {
@@ -280,13 +291,13 @@ async function connectToDatabase() {
       (req, res) => {
         const user = req.user;
         req.session.userId = user._id;
-        req.session.loginType = "google";
+        req.session.loginType = "google"; // Mark as Google login
         res.redirect(`https://securaid.mywire.org?username=${user.username}`);
       }
     );
 
     app.get("/auth/logout", async (req, res) => {
-      const isGoogleUser = req.session.passport?.user?.token;
+      const isGoogleUser = req.session.passport?.user?.token; // Check if logged in with Google
 
       req.logout((err) => {
         if (err) return res.status(500).json({ error: "Logout failed" });
@@ -294,6 +305,7 @@ async function connectToDatabase() {
         res.clearCookie("connect.sid");
 
         if (isGoogleUser) {
+          // Revoke Google token
           const revokeUrl = `https://oauth2.googleapis.com/revoke?token=${isGoogleUser}`;
           fetch(revokeUrl, { method: "POST" })
             .then(() => {
@@ -383,7 +395,6 @@ async function connectToDatabase() {
         }
 
         req.session.userId = user._id;
-        console.log("Session after login:", req.session);
 
         res.json({ message: "Login successful", username: user.username }); // Return the username
       } catch (error) {
@@ -483,7 +494,28 @@ async function connectToDatabase() {
     });
 
     app.get("/api/protected", async (req, res) => {
-      console.log("Session in /api/protected:", req.session);
+      if (!req.session.userId) {
+        return res
+          .status(401)
+          .json({ message: "Unauthorized. Please log in." });
+      }
+
+      try {
+        const user = await usersCollection.findOne({
+          _id: new ObjectId(req.session.userId),
+        });
+        if (!user) {
+          return res.status(404).json({ message: "User not found." });
+        }
+
+        res.json({ username: user.username });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ message: "Internal server error." });
+      }
+    });
+
+    app.get("/api/protected", async (req, res) => {
       if (!req.session.userId) {
         return res
           .status(401)
