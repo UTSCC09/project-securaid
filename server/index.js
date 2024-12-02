@@ -49,20 +49,18 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
 
-// MongoDB connection setup
 const client = new MongoClient(process.env.MONGODB_URI);
 let usersCollection;
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
-// Configure Passport
 passport.use(
   new GoogleStrategy(
     {
@@ -75,11 +73,9 @@ passport.use(
         const { id, displayName, emails } = profile;
         const email = emails[0].value;
 
-        // Check if user exists in the database
         let user = await usersCollection.findOne({ googleId: id });
 
         if (!user) {
-          // Create a new user
           user = {
             googleId: id,
             username: displayName,
@@ -88,7 +84,7 @@ passport.use(
           await usersCollection.insertOne(user);
         }
 
-        done(null, user); // Pass the user to the next middleware
+        done(null, user);
       } catch (error) {
         done(error, null);
       }
@@ -291,13 +287,13 @@ async function connectToDatabase() {
       (req, res) => {
         const user = req.user;
         req.session.userId = user._id;
-        req.session.loginType = "google"; // Mark as Google login
+        req.session.loginType = "google";
         res.redirect(`https://securaid.mywire.org?username=${user.username}`);
       }
     );
 
     app.get("/auth/logout", async (req, res) => {
-      const isGoogleUser = req.session.passport?.user?.token; // Check if logged in with Google
+      const isGoogleUser = req.session.passport?.user?.token;
 
       req.logout((err) => {
         if (err) return res.status(500).json({ error: "Logout failed" });
@@ -305,7 +301,6 @@ async function connectToDatabase() {
         res.clearCookie("connect.sid");
 
         if (isGoogleUser) {
-          // Revoke Google token
           const revokeUrl = `https://oauth2.googleapis.com/revoke?token=${isGoogleUser}`;
           fetch(revokeUrl, { method: "POST" })
             .then(() => {
