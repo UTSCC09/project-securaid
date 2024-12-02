@@ -41,7 +41,7 @@ console.log(`CORS ALLOWS: ${process.env.FRONTEND_URL}`);
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "@#HJDNJ@#$32445SFjN!@#@$",
+    secret: "@#HJDNJ@#$32445SFjN!@#@$",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
@@ -49,10 +49,9 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-      sameSite: "Strict", // prevent CSRF attacks
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
   })
 );
@@ -69,7 +68,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.FRONTEND_URL}/auth/google/callback`,
+      callbackURL: "https://securaid-backend.mywire.org/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -287,13 +286,13 @@ async function connectToDatabase() {
     app.get(
       "/auth/google/callback",
       passport.authenticate("google", {
-        failureRedirect: `${process.env.FRONTEND_URL}`,
+        failureRedirect: "https://securaid.mywire.org",
       }),
       (req, res) => {
         const user = req.user;
         req.session.userId = user._id;
         req.session.loginType = "google"; // Mark as Google login
-        res.redirect(`${process.env.FRONTEND_URL}?username=${user.username}`);
+        res.redirect(`https://securaid.mywire.org?username=${user.username}`);
       }
     );
 
@@ -310,15 +309,15 @@ async function connectToDatabase() {
           const revokeUrl = `https://oauth2.googleapis.com/revoke?token=${isGoogleUser}`;
           fetch(revokeUrl, { method: "POST" })
             .then(() => {
-              res.redirect(`${process.env.FRONTEND_URL}`);
+              res.redirect("https://securaid.mywire.org");
             })
             .catch((revokeError) => {
               console.error("Error revoking Google token:", revokeError);
-              res.redirect(`${process.env.FRONTEND_URL}`);
+              res.redirect("https://securaid.mywire.org");
             });
         } else {
           // Standard logout
-          res.redirect(`${process.env.FRONTEND_URL}`);
+          res.redirect("https://securaid.mywire.org");
         }
       });
     });
