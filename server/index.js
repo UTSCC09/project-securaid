@@ -51,7 +51,6 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
     },
   })
@@ -384,6 +383,7 @@ async function connectToDatabase() {
         }
 
         req.session.userId = user._id;
+        console.log("Session after login:", req.session);
 
         res.json({ message: "Login successful", username: user.username }); // Return the username
       } catch (error) {
@@ -483,6 +483,7 @@ async function connectToDatabase() {
     });
 
     app.get("/api/protected", async (req, res) => {
+      console.log("Session in /api/protected:", req.session);
       if (!req.session.userId) {
         return res
           .status(401)
