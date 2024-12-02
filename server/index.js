@@ -515,44 +515,18 @@ async function connectToDatabase() {
       }
     });
 
-    app.get("/api/protected", async (req, res) => {
-      if (!req.session.userId) {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized. Please log in." });
-      }
-
-      try {
-        const user = await usersCollection.findOne({
-          _id: new ObjectId(req.session.userId),
-        });
-        if (!user) {
-          return res.status(404).json({ message: "User not found." });
-        }
-
-        res.json({ username: user.username });
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        res.status(500).json({ message: "Internal server error." });
-      }
-    });
-
     app.delete("/api/files/:fileId", async (req, res) => {
       try {
         const { fileId } = req.params;
-        console.log("------> File ID:", fileId);
 
         if (!fileId) {
           return res.status(400).json({ error: "File ID is required." });
         }
 
-        // Convert fileId to ObjectId
         const fileObject = new ObjectId(fileId);
 
-        // Find and delete the file
         const file = await filesCollection.findOne({ _id: fileObject });
         if (!file) {
-          console.log("----> File not found");
           return res.status(404).json({ error: "File not found." });
         }
 
