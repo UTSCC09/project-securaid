@@ -53,10 +53,6 @@ app.use(
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
       sameSite: "Strict", // prevent CSRF attacks
-      domain:
-        process.env.NODE_ENV === "production"
-          ? "securaid.mywire.org"
-          : "localhost",
     },
   })
 );
@@ -73,7 +69,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://securaid-backend.mywire.org/auth/google/callback",
+      callbackURL: `${process.env.FRONTEND_URL}/auth/google/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -291,13 +287,13 @@ async function connectToDatabase() {
     app.get(
       "/auth/google/callback",
       passport.authenticate("google", {
-        failureRedirect: "https://securaid.mywire.org",
+        failureRedirect: `${process.env.FRONTEND_URL}`,
       }),
       (req, res) => {
         const user = req.user;
         req.session.userId = user._id;
         req.session.loginType = "google"; // Mark as Google login
-        res.redirect(`https://securaid.mywire.org?username=${user.username}`);
+        res.redirect(`${process.env.FRONTEND_URL}?username=${user.username}`);
       }
     );
 
@@ -314,15 +310,15 @@ async function connectToDatabase() {
           const revokeUrl = `https://oauth2.googleapis.com/revoke?token=${isGoogleUser}`;
           fetch(revokeUrl, { method: "POST" })
             .then(() => {
-              res.redirect("https://securaid.mywire.org");
+              res.redirect(`${process.env.FRONTEND_URL}`);
             })
             .catch((revokeError) => {
               console.error("Error revoking Google token:", revokeError);
-              res.redirect("https://securaid.mywire.org");
+              res.redirect(`${process.env.FRONTEND_URL}`);
             });
         } else {
           // Standard logout
-          res.redirect("https://securaid.mywire.org");
+          res.redirect(`${process.env.FRONTEND_URL}`);
         }
       });
     });

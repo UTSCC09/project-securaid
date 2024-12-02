@@ -38,7 +38,13 @@ function Page() {
 
   return (
     <SnackbarProvider maxSnack={5} autoHideDuration={2500}>
-      <div style={{ position: "relative", display: "flex",  flexDirection: "column"}}>
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <h1 id="homepage_title">Securaid</h1>
         <h4 id="homepage_slogan">A secure place for everyone</h4>
 
@@ -56,7 +62,9 @@ function Page() {
               <button
                 className="sign-out-button"
                 id="sign-out-button"
-                onClick={() => handleSignout(() => setUsername(null), isGoogleUsed)}
+                onClick={() =>
+                  handleSignout(() => setUsername(null), isGoogleUsed)
+                }
               >
                 Sign Out
               </button>
