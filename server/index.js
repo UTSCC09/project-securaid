@@ -51,6 +51,7 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
+      sameSite: none,
       maxAge: 24 * 60 * 60 * 1000,
     },
   })
@@ -59,6 +60,7 @@ app.use(
 const client = new MongoClient(process.env.MONGODB_URI);
 let usersCollection;
 const passport = require("passport");
+const { NodeNextRequest } = require("next/dist/server/base-http/node");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 passport.use(
