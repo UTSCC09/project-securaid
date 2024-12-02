@@ -1,2 +1,3 @@
 # securaid
-Cscc09 final project
+site: https://securaid.mywire.org
+demo:
