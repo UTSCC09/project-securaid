@@ -13,6 +13,7 @@ const fetch = require("node-fetch");
 const FormData = require("form-data");
 const path = require("path");
 const dotenv = require("dotenv");
+const jwt = require("jsonwebtoken");
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -41,6 +42,18 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 console.log(`CORS ALLOWS: ${process.env.FRONTEND_URL}`);
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your_session_secret",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      collectionName: "sessions",
+    }),
+  })
+);
 
 const ensureAuthenticated = (req, res, next) => {
   const token = req.cookies.auth_token;
@@ -77,7 +90,6 @@ passport.use(
         const { id, displayName, emails } = profile;
         const email = emails[0].value;
 
-        // Check if user exists in the database
         let user = await usersCollection.findOne({ googleId: id });
 
         if (!user) {
@@ -90,7 +102,7 @@ passport.use(
           await usersCollection.insertOne(user);
         }
 
-        done(null, user); // Pass the user to the next middleware
+        done(null, user);
       } catch (error) {
         done(error, null);
       }
